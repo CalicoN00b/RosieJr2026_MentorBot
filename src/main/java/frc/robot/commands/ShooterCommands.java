@@ -6,14 +6,9 @@ import frc.robot.subsystems.shooter.Shooter;
 
 public class ShooterCommands {
 
-    private ShooterCommands() {}
+  private ShooterCommands() {}
 
-    public static Command runShooter(Shooter shooter) {
-        return Commands.runEnd(
-            () -> shooter.setDutyCycle(0.8), 
-            () -> shooter.setNeutral(), 
-            shooter
-        );
-    }
-    
+  public static Command runShooter(Shooter shooter) {
+    return Commands.runEnd(() -> shooter.setDutyCycle(0.8), () -> shooter.setNeutral(), shooter);
+  }
 }

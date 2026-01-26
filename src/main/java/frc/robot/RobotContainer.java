@@ -146,11 +146,7 @@ public class RobotContainer {
                     drive)
                 .ignoringDisable(true));
 
-    controller
-        .y()
-        .whileTrue(
-            ShooterCommands.runShooter(shooter)
-        );
+    controller.y().whileTrue(ShooterCommands.runShooter(shooter));
   }
 
   /**

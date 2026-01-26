@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
-
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -95,8 +94,9 @@ public class Vision extends SubsystemBase {
       for (var observation : inputs[cameraIndex].poseObservations) {
         // Check whether to reject pose
         boolean rejectPose =
-            observation.type() == PoseObservationType.PHOTONVISION && // Don't reject QuestNav poses
-            observation.tagCount() == 0 // Must have at least one tag
+            observation.type() == PoseObservationType.PHOTONVISION
+                    && // Don't reject QuestNav poses
+                    observation.tagCount() == 0 // Must have at least one tag
                 || (observation.tagCount() == 1
                     && observation.ambiguity() > maxAmbiguity) // Cannot be high ambiguity
                 || Math.abs(observation.pose().getZ())
@@ -124,8 +124,8 @@ public class Vision extends SubsystemBase {
         // Calculate standard deviations
         double stdDevFactor =
             observation.type() == PoseObservationType.PHOTONVISION
-            ? Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount()
-            : 1;
+                ? Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount()
+                : 1;
         double linearStdDev = linearStdDevBaseline * stdDevFactor;
         double angularStdDev = angularStdDevBaseline * stdDevFactor;
         if (cameraIndex < cameraStdDevFactors.length) {

@@ -17,14 +17,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIONavX;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOSpark;
-import frc.robot.subsystems.vision.Vision;
-import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.commands.ShooterCommands;
+import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.shooter.*;
+import frc.robot.subsystems.vision.*;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -37,6 +33,7 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Vision vision;
+  private final Shooter shooter;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -57,6 +54,7 @@ public class RobotContainer {
                 new ModuleIOSpark(2),
                 new ModuleIOSpark(3));
         vision = new Vision(drive::addVisionMeasurement);
+        shooter = new Shooter(new ShooterIOTalonFX());
         break;
 
       case SIM:
@@ -69,6 +67,7 @@ public class RobotContainer {
                 new ModuleIOSim(),
                 new ModuleIOSim());
         vision = new Vision(drive::addVisionMeasurement);
+        shooter = new Shooter(new ShooterIO() {});
         break;
 
       default:
@@ -81,6 +80,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
+        shooter = new Shooter(new ShooterIO() {});
         break;
     }
 
@@ -145,6 +145,12 @@ public class RobotContainer {
                             new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero)),
                     drive)
                 .ignoringDisable(true));
+
+    controller
+        .y()
+        .whileTrue(
+            ShooterCommands.runShooter(shooter)
+        );
   }
 
   /**

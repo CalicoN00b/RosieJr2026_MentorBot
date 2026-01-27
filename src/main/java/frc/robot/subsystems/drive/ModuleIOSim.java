@@ -10,18 +10,12 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
-import java.util.Arrays;
-
-import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
-import org.ironmaple.simulation.motorsims.SimulatedMotorController.GenericMotorController;
-
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.util.SparkUtil;
+import java.util.Arrays;
+import org.ironmaple.simulation.drivesims.SwerveModuleSimulation;
+import org.ironmaple.simulation.motorsims.SimulatedMotorController.GenericMotorController;
 
 /** Physics sim implementation of module IO. */
 public class ModuleIOSim implements ModuleIO {
@@ -39,8 +33,12 @@ public class ModuleIOSim implements ModuleIO {
 
   public ModuleIOSim(SwerveModuleSimulation moduleSim) {
     this.moduleSim = moduleSim;
-    driveMotor = moduleSim.useGenericMotorControllerForDrive().withCurrentLimit(Amps.of(driveMotorCurrentLimit));
-    turnMotor = moduleSim.useGenericControllerForSteer().withCurrentLimit(Amps.of(turnMotorCurrentLimit));
+    driveMotor =
+        moduleSim
+            .useGenericMotorControllerForDrive()
+            .withCurrentLimit(Amps.of(driveMotorCurrentLimit));
+    turnMotor =
+        moduleSim.useGenericControllerForSteer().withCurrentLimit(Amps.of(turnMotorCurrentLimit));
 
     // Enable wrapping for turn PID
     turnController.enableContinuousInput(-Math.PI, Math.PI);
@@ -51,7 +49,8 @@ public class ModuleIOSim implements ModuleIO {
     // Run closed-loop control
     if (driveClosedLoop) {
       driveAppliedVolts =
-          driveFFVolts + driveController.calculate(moduleSim.getDriveWheelFinalSpeed().in(RadiansPerSecond));
+          driveFFVolts
+              + driveController.calculate(moduleSim.getDriveWheelFinalSpeed().in(RadiansPerSecond));
     } else {
       driveController.reset();
     }
@@ -82,9 +81,10 @@ public class ModuleIOSim implements ModuleIO {
     // Update odometry inputs (50Hz because high-frequency odometry in sim doesn't
     // matter)
     inputs.odometryTimestamps = SparkUtil.getSimulationOdometryTimeStamps();
-    inputs.odometryDrivePositionsRad = Arrays.stream(moduleSim.getCachedDriveWheelFinalPositions())
-      .mapToDouble(angle -> angle.in(Radians))
-      .toArray();
+    inputs.odometryDrivePositionsRad =
+        Arrays.stream(moduleSim.getCachedDriveWheelFinalPositions())
+            .mapToDouble(angle -> angle.in(Radians))
+            .toArray();
     inputs.odometryTurnPositions = moduleSim.getCachedSteerAbsolutePositions();
   }
 

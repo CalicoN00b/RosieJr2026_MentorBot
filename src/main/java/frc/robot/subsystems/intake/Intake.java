@@ -22,5 +22,4 @@ public class Intake {
   public void setWheelsVelocity(double velocityRadPerSec) {
     io.setWheelsVelocity(velocityRadPerSec);
   }
-
 }

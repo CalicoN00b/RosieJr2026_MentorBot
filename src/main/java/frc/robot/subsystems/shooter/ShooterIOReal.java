@@ -8,11 +8,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-public class ShooterIOTalonFX implements ShooterIO {
+public class ShooterIOReal implements ShooterIO {
 
   private final TalonFX shooterMotor;
 
-  public ShooterIOTalonFX() {
+  public ShooterIOReal() {
     shooterMotor = new TalonFX(0);
 
     TalonFXConfiguration config = new TalonFXConfiguration();

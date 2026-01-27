@@ -36,7 +36,7 @@ import java.util.function.DoubleSupplier;
  * Module IO implementation for Spark Flex drive motor controller, Spark Max turn motor controller,
  * and duty cycle absolute encoder.
  */
-public class ModuleIOSpark implements ModuleIO {
+public class ModuleIOReal implements ModuleIO {
   private final Rotation2d zeroRotation;
 
   // Hardware objects
@@ -60,7 +60,7 @@ public class ModuleIOSpark implements ModuleIO {
   private final Debouncer turnConnectedDebounce =
       new Debouncer(0.5, Debouncer.DebounceType.kFalling);
 
-  public ModuleIOSpark(int module) {
+  public ModuleIOReal(int module) {
     zeroRotation =
         switch (module) {
           case 0 -> frontLeftZeroRotation;

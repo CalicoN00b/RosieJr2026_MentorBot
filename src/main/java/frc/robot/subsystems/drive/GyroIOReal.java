@@ -16,12 +16,12 @@ import edu.wpi.first.math.util.Units;
 import java.util.Queue;
 
 /** IO implementation for NavX. */
-public class GyroIONavX implements GyroIO {
+public class GyroIOReal implements GyroIO {
   private final AHRS navX = new AHRS(NavXComType.kMXP_SPI, (byte) odometryFrequency);
   private final Queue<Double> yawPositionQueue;
   private final Queue<Double> yawTimestampQueue;
 
-  public GyroIONavX() {
+  public GyroIOReal() {
     yawTimestampQueue = SparkOdometryThread.getInstance().makeTimestampQueue();
     yawPositionQueue = SparkOdometryThread.getInstance().registerSignal(navX::getAngle);
   }

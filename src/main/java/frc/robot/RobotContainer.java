@@ -53,14 +53,14 @@ public class RobotContainer {
         // Real robot, instantiate hardware IO implementations
         drive =
             new Drive(
-                new GyroIONavX(),
-                new ModuleIOSpark(0),
-                new ModuleIOSpark(1),
-                new ModuleIOSpark(2),
-                new ModuleIOSpark(3),
+                new GyroIOReal(),
+                new ModuleIOReal(0),
+                new ModuleIOReal(1),
+                new ModuleIOReal(2),
+                new ModuleIOReal(3),
                 (pose) -> {});
         vision = new Vision(drive::addVisionMeasurement);
-        shooter = new Shooter(new ShooterIOTalonFX());
+        shooter = new Shooter(new ShooterIOReal());
         break;
 
       case SIM:

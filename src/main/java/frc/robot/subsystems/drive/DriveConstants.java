@@ -7,6 +7,15 @@
 
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Kilograms;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Volts;
+
+import org.ironmaple.simulation.drivesims.COTS;
+import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
+import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
+
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -108,4 +117,20 @@ public class DriveConstants {
               driveMotorCurrentLimit,
               1),
           moduleTranslations);
+
+  public static final DriveTrainSimulationConfig mapleSimConfig = DriveTrainSimulationConfig.Default()
+      .withCustomModuleTranslations(moduleTranslations)
+      .withRobotMass(Kilograms.of(robotMassKg))
+      .withGyro(COTS.ofNav2X())
+      .withSwerveModule(new SwerveModuleSimulationConfig(
+        driveGearbox, 
+        turnGearbox, 
+        driveMotorReduction, 
+        turnMotorReduction, 
+        Volts.of(0.1), 
+        Volts.of(0.1), 
+        Meters.of(wheelRadiusMeters), 
+        KilogramSquareMeters.of(0.02), 
+        wheelCOF)
+    );
 }

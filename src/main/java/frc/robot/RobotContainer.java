@@ -21,6 +21,9 @@ import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
+
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -34,6 +37,8 @@ public class RobotContainer {
   private final Drive drive;
   private final Vision vision;
   private final Shooter shooter;
+
+  private SwerveDriveSimulation driveSim = null;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -52,20 +57,24 @@ public class RobotContainer {
                 new ModuleIOSpark(0),
                 new ModuleIOSpark(1),
                 new ModuleIOSpark(2),
-                new ModuleIOSpark(3));
+                new ModuleIOSpark(3),
+                (pose) -> {});
         vision = new Vision(drive::addVisionMeasurement);
         shooter = new Shooter(new ShooterIOTalonFX());
         break;
 
       case SIM:
+        driveSim = new SwerveDriveSimulation(DriveConstants.mapleSimConfig, new Pose2d(3, 3, Rotation2d.kZero));
+        SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
         // Sim robot, instantiate physics sim IO implementations
         drive =
             new Drive(
-                new GyroIO() {},
-                new ModuleIOSim(),
-                new ModuleIOSim(),
-                new ModuleIOSim(),
-                new ModuleIOSim());
+                new GyroIOSim(driveSim.getGyroSimulation()) {},
+                new ModuleIOSim(driveSim.getModules()[0]),
+                new ModuleIOSim(driveSim.getModules()[1]),
+                new ModuleIOSim(driveSim.getModules()[2]),
+                new ModuleIOSim(driveSim.getModules()[3]),
+                driveSim::setSimulationWorldPose);
         vision = new Vision(drive::addVisionMeasurement);
         shooter = new Shooter(new ShooterIO() {});
         break;
@@ -78,7 +87,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {},
-                new ModuleIO() {});
+                new ModuleIO() {},
+                (pose) -> {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         shooter = new Shooter(new ShooterIO() {});
         break;

@@ -15,6 +15,8 @@ public class VisionIOQuestNav implements VisionIO {
   private final Transform3d robotToQuest;
   private final Supplier<Pose2d> robotPose;
 
+  private boolean previousConnected = false;
+
   /**
    * Creates a new VisionIOQuestNav
    *
@@ -32,6 +34,10 @@ public class VisionIOQuestNav implements VisionIO {
   public void updateInputs(VisionIOInputs inputs) {
     questNav.commandPeriodic();
     inputs.connected = questNav.isConnected();
+
+    if (!previousConnected && inputs.connected) {
+      questNav.setPose(new Pose3d(robotPose.get()).transformBy(robotToQuest));
+    }
 
     // We don't use tags in this implementation, so we get to set these to the default
     inputs.tagIds = new int[0];
@@ -52,5 +58,7 @@ public class VisionIOQuestNav implements VisionIO {
     for (int i = 0; i < poseObservations.size(); i++) {
       inputs.poseObservations[i] = poseObservations.get(i);
     }
+
+    previousConnected = inputs.connected;
   }
 }

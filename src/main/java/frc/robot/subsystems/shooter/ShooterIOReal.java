@@ -3,11 +3,9 @@ package frc.robot.subsystems.shooter;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.NeutralOut;
-import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.controller.BangBangController;
 
 public class ShooterIOReal implements ShooterIO {
@@ -41,7 +39,9 @@ public class ShooterIOReal implements ShooterIO {
 
   @Override
   public void setShooterVelocity(double velocityRadPerSec) {
-    setShooterDutyCycle(bangBang.calculate(shooterMotor.getRotorVelocity().getValueAsDouble() * 2 * Math.PI, velocityRadPerSec));
+    setShooterDutyCycle(
+        bangBang.calculate(
+            shooterMotor.getRotorVelocity().getValueAsDouble() * 2 * Math.PI, velocityRadPerSec));
   }
 
   @Override

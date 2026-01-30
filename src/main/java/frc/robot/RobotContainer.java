@@ -88,7 +88,7 @@ public class RobotContainer {
                     VisionConstants.camera1Name,
                     VisionConstants.robotToCamera1,
                     driveSim::getSimulatedDriveTrainPose));
-        shooter = new Shooter(new ShooterIO() {});
+        shooter = new Shooter(new ShooterIOSim() {});
         break;
 
       default:
@@ -144,6 +144,13 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
+    // Reset gyro to 0° when start button is pressed
+    final Runnable resetGryo =
+        Constants.currentMode == Constants.Mode.SIM
+            ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
+            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
+    controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
+
     // Lock to 0° when A button is held
     controller
         .a()
@@ -154,17 +161,7 @@ public class RobotContainer {
                 () -> -controller.getLeftX(),
                 () -> Rotation2d.kZero));
 
-    // Switch to X pattern when X button is pressed
-    controller.x().onTrue(Commands.runOnce(drive::stopWithX, drive));
-
-    // Reset gyro to 0° when B button is pressed
-    final Runnable resetGryo =
-        Constants.currentMode == Constants.Mode.SIM
-            ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
-            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
-    controller.b().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
-
-    controller.y().whileTrue(ShooterCommands.runShooter(shooter));
+    controller.x().whileTrue(ShooterCommands.runShooter(shooter));
   }
 
   /**

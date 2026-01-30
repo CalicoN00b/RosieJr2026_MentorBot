@@ -10,7 +10,7 @@ public class ShooterIOSim implements ShooterIO {
   private final DCMotorSim sim;
 
   public ShooterIOSim() {
-    sim = new DCMotorSim(LinearSystemId.createDCMotorSystem(gearbox, 0.0141593652, 0.75), gearbox);
+    sim = new DCMotorSim(LinearSystemId.createDCMotorSystem(gearbox, 0.0104726201, 0.75), gearbox);
   }
 
   @Override

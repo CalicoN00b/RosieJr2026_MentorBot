@@ -1,5 +1,8 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.NeutralOut;
@@ -41,7 +44,9 @@ public class ShooterIOReal implements ShooterIO {
   public void setShooterVelocity(double velocityRadPerSec) {
     setShooterDutyCycle(
         bangBang.calculate(
-            shooterMotor.getRotorVelocity().getValueAsDouble() * 2 * Math.PI, velocityRadPerSec));
+            RotationsPerSecond.of(shooterMotor.getRotorVelocity().getValueAsDouble())
+                .in(RadiansPerSecond),
+            velocityRadPerSec));
   }
 
   @Override

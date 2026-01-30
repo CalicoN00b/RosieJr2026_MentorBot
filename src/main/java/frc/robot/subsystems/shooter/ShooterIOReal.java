@@ -8,9 +8,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.controller.BangBangController;
+
 public class ShooterIOReal implements ShooterIO {
 
   private final TalonFX shooterMotor;
+  private final BangBangController bangBang = new BangBangController();
 
   public ShooterIOReal() {
     shooterMotor = new TalonFX(0);
@@ -18,6 +21,7 @@ public class ShooterIOReal implements ShooterIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    config.Feedback.SensorToMechanismRatio = 0.75;
 
     shooterMotor.getConfigurator().apply(config);
   }
@@ -37,7 +41,7 @@ public class ShooterIOReal implements ShooterIO {
 
   @Override
   public void setShooterVelocity(double velocityRadPerSec) {
-    shooterMotor.setControl(new VelocityDutyCycle(velocityRadPerSec / (2 * Math.PI)));
+    setShooterDutyCycle(bangBang.calculate(shooterMotor.getRotorVelocity().getValueAsDouble() * 2 * Math.PI, velocityRadPerSec));
   }
 
   @Override

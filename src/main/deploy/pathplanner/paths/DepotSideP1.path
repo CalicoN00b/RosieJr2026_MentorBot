@@ -1,0 +1,101 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.437181846217105,
+        "y": 7.429340691817434
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.437181846217105,
+        "y": 7.429340691817434
+      },
+      "isLocked": false,
+      "linkedName": "DepotTrenchStart"
+    },
+    {
+      "anchor": {
+        "x": 7.3817384954084435,
+        "y": 7.188108595463267
+      },
+      "prevControl": {
+        "x": 6.864885778594436,
+        "y": 7.398762592186711
+      },
+      "nextControl": {
+        "x": 7.898591212222451,
+        "y": 6.977454598739823
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.754780530427631,
+        "y": 5.9243258720531795
+      },
+      "prevControl": {
+        "x": 7.754780530427631,
+        "y": 6.863168218932386
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "DepotTrenchNeutralZone"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1.3123110640870626,
+      "rotationDegrees": -90.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 0.9748078208556143,
+      "maxWaypointRelativePos": 2.0,
+      "constraints": {
+        "maxVelocity": 1.0,
+        "maxAcceleration": 3.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeAtNeutralZone",
+      "waypointRelativePos": 1.102011614304813,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Intake"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -90.0
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 0.0
+  },
+  "useDefaultConstraints": true
+}

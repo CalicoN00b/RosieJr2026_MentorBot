@@ -8,6 +8,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -22,6 +23,7 @@ import frc.robot.commands.ShooterCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
+import java.util.Map;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -106,6 +108,11 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIO() {});
         break;
     }
+
+    NamedCommands.registerCommands(
+        Map.of(
+            "Intake", Commands.print("Intaking!"),
+            "Shoot", Commands.print("Shooting!")));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());

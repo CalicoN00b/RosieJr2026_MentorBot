@@ -20,7 +20,7 @@ import org.littletonrobotics.junction.Logger;
 public class AimAtHub extends Command {
 
   private static final LoggedTunableNumber thetaKp =
-      new LoggedTunableNumber("AimAtHub/ThetaKp", 5.0);
+      new LoggedTunableNumber("AimAtHub/ThetaKp", 10.0);
   private static final LoggedTunableNumber thetaKd =
       new LoggedTunableNumber("AimAtHub/ThetaKd", 0.4);
 

@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -22,9 +24,12 @@ import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.SuperstructureCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
 import java.util.Map;
+import org.ironmaple.simulation.IntakeSimulation;
+import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -41,8 +46,10 @@ public class RobotContainer {
   private final Drive drive;
   private final Vision vision;
   private final Shooter shooter;
+  private final Intake intake;
 
   private SwerveDriveSimulation driveSim = null;
+  private IntakeSimulation intakeSim = null;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -65,6 +72,7 @@ public class RobotContainer {
                 (pose) -> {});
         vision = new Vision(drive::addVisionMeasurement);
         shooter = new Shooter(new ShooterIOReal());
+        intake = new Intake(new IntakeIOReal());
         break;
 
       case SIM:
@@ -72,6 +80,11 @@ public class RobotContainer {
             new SwerveDriveSimulation(
                 DriveConstants.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
         SimulatedArena.getInstance().addDriveTrainSimulation(driveSim);
+
+        intakeSim =
+            IntakeSimulation.OverTheBumperIntake(
+                "Fuel", driveSim, Inches.of(20.125), Inches.of(10), IntakeSide.FRONT, 100);
+
         // Sim robot, instantiate physics sim IO implementations
         drive =
             new Drive(
@@ -93,6 +106,7 @@ public class RobotContainer {
                     VisionConstants.robotToCamera1,
                     driveSim::getSimulatedDriveTrainPose));
         shooter = new Shooter(new ShooterIOSim() {});
+        intake = new Intake(new IntakeIOSim());
         break;
 
       default:
@@ -107,6 +121,7 @@ public class RobotContainer {
                 (pose) -> {});
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         shooter = new Shooter(new ShooterIO() {});
+        intake = new Intake(new IntakeIO() {});
         break;
     }
 
@@ -161,14 +176,16 @@ public class RobotContainer {
     controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
 
     // Lock to 0° when A button is held
-    controller
-        .a()
-        .whileTrue(
-            DriveCommands.joystickDriveAtAngle(
-                drive,
-                () -> -controller.getLeftY(),
-                () -> -controller.getLeftX(),
-                () -> Rotation2d.kZero));
+    // controller
+    //     .a()
+    //     .whileTrue(
+    //         DriveCommands.joystickDriveAtAngle(
+    //             drive,
+    //             () -> -controller.getLeftY(),
+    //             () -> -controller.getLeftX(),
+    //             () -> Rotation2d.kZero));
+
+    controller.a().whileTrue(SuperstructureCommands.intakeFuel(intake, intakeSim));
 
     controller.x().whileTrue(ShooterCommands.runShooter(shooter));
 
@@ -177,9 +194,7 @@ public class RobotContainer {
     controller
         .rightTrigger()
         .whileTrue(
-            Constants.currentMode == Constants.Mode.REAL
-                ? SuperstructureCommands.scoreFuelReal(drive, shooter, controller)
-                : SuperstructureCommands.scoreFuelSim(drive, driveSim, controller));
+            SuperstructureCommands.scoreFuel(drive, shooter, driveSim, intakeSim, controller));
   }
 
   /**

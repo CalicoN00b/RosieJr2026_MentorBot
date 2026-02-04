@@ -85,6 +85,9 @@ public class RobotContainer {
             IntakeSimulation.OverTheBumperIntake(
                 "Fuel", driveSim, Inches.of(20.125), Inches.of(10), IntakeSide.FRONT, 100);
 
+        // Add preload to sim
+        intakeSim.setGamePiecesCount(8);
+
         // Sim robot, instantiate physics sim IO implementations
         drive =
             new Drive(
@@ -127,8 +130,8 @@ public class RobotContainer {
 
     NamedCommands.registerCommands(
         Map.of(
-            "Intake", Commands.print("Intaking!"),
-            "Shoot", Commands.print("Shooting!")));
+            "Intake", SuperstructureCommands.intakeFuel(intake, intakeSim),
+            "Shoot", SuperstructureCommands.scoreFuelAuto(drive, shooter, driveSim, intakeSim)));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -185,7 +188,7 @@ public class RobotContainer {
     //             () -> -controller.getLeftX(),
     //             () -> Rotation2d.kZero));
 
-    controller.a().whileTrue(SuperstructureCommands.intakeFuel(intake, intakeSim));
+    controller.rightBumper().whileTrue(SuperstructureCommands.intakeFuel(intake, intakeSim));
 
     controller.x().whileTrue(ShooterCommands.runShooter(shooter));
 

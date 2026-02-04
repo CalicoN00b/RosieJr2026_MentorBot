@@ -20,7 +20,7 @@ public class SuperstructureCommands {
    *
    * @param drive - Drive subsystem.
    * @param shooter - Intake subsystem.
-   * @param driveSimulation - Drive simulation. Only used in sim for visualzing fuel.
+   * @param driveSim - Drive simulation. Only used in sim for visualzing fuel.
    * @param intakeSim - Intake simulation. Only used in sim for visualizing fuel.
    * @param controller - Drive controller.
    * @return The command sequence for scoring fuel
@@ -28,7 +28,7 @@ public class SuperstructureCommands {
   public static Command scoreFuel(
       Drive drive,
       Shooter shooter,
-      SwerveDriveSimulation driveSimulation,
+      SwerveDriveSimulation driveSim,
       IntakeSimulation intakeSim,
       CommandXboxController controller) {
     Command scoringCommand;
@@ -39,13 +39,37 @@ public class SuperstructureCommands {
               new AimAtHub(drive, controller),
               ShooterCommands.runShooter(shooter),
               Commands.sequence(
-                  Commands.waitUntil(drive::aimedAtHub),
-                  SimCommands.visualizeFuel(driveSimulation)
-                      .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
-                  Commands.waitSeconds(0.18)));
+                      Commands.waitUntil(drive::aimedAtHub),
+                      SimCommands.visualizeFuel(drive, driveSim, intakeSim)
+                          .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
+                      Commands.waitSeconds(0.08))
+                  .repeatedly());
     } else {
       scoringCommand =
           Commands.parallel(new AimAtHub(drive, controller), ShooterCommands.runShooter(shooter));
+    }
+
+    return scoringCommand;
+  }
+
+  public static Command scoreFuelAuto(
+      Drive drive, Shooter shooter, SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
+    Command scoringCommand;
+
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      scoringCommand =
+          Commands.parallel(
+              new AimAtHubAuto(drive),
+              ShooterCommands.runShooter(shooter),
+              Commands.sequence(
+                      Commands.waitUntil(drive::aimedAtHub),
+                      SimCommands.visualizeFuel(drive, driveSim, intakeSim)
+                          .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
+                      Commands.waitSeconds(0.08))
+                  .repeatedly());
+    } else {
+      scoringCommand =
+          Commands.parallel(new AimAtHubAuto(drive), ShooterCommands.runShooter(shooter));
     }
 
     return scoringCommand;

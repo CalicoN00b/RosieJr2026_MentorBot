@@ -30,6 +30,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -321,7 +322,7 @@ public class Drive extends SubsystemBase {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
 
-  @AutoLogOutput(key = "Drive/AimedAtHub")
+  @AutoLogOutput(key = "Odometry/AimedAtHub")
   public boolean aimedAtHub() {
     boolean isFlipped = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
     Pose2d currentPose = getPose();
@@ -333,5 +334,19 @@ public class Drive extends SubsystemBase {
     Rotation2d currentToHubAngle = hubCenter.minus(currentPose.getTranslation()).getAngle();
 
     return Math.abs(currentPose.getRotation().getDegrees() - currentToHubAngle.getDegrees()) < 1;
+  }
+
+  @AutoLogOutput(key = "Odometry/DistanceFromHub")
+  public double distanceFromHubFeet() {
+    boolean isFlipped = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    Pose2d currentPose = getPose();
+    Translation2d hubCenter = FieldConstants.hubCenter;
+    if (isFlipped) {
+      hubCenter = hubCenter.rotateAround(FieldConstants.fieldCenter, Rotation2d.k180deg);
+    }
+
+    double currentToHubDistance = currentPose.getTranslation().getDistance(hubCenter);
+
+    return Units.metersToFeet(currentToHubDistance);
   }
 }

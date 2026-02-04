@@ -55,13 +55,12 @@ public class AimAtHub extends Command {
     }
 
     Pose2d currentPose = drive.getPose();
-    Pose2d hubCenter = FieldConstants.hubCenter;
+    Translation2d hubCenter = FieldConstants.hubCenter;
     if (isFlipped) {
       hubCenter = hubCenter.rotateAround(FieldConstants.fieldCenter, Rotation2d.k180deg);
     }
 
-    Rotation2d currentToHubAngle =
-        hubCenter.getTranslation().minus(currentPose.getTranslation()).getAngle();
+    Rotation2d currentToHubAngle = hubCenter.minus(currentPose.getTranslation()).getAngle();
 
     Translation2d driveVelocity =
         getLinearVelocityFromJoysticks(-controller.getLeftY(), -controller.getLeftX());

@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.AimAtHub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.SuperstructureCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
@@ -172,6 +173,13 @@ public class RobotContainer {
     controller.x().whileTrue(ShooterCommands.runShooter(shooter));
 
     controller.y().whileTrue(new AimAtHub(drive, controller));
+
+    controller
+        .rightTrigger()
+        .whileTrue(
+            Constants.currentMode == Constants.Mode.REAL
+                ? SuperstructureCommands.scoreFuelReal(drive, shooter, controller)
+                : SuperstructureCommands.scoreFuelSim(drive, driveSim, controller));
   }
 
   /**

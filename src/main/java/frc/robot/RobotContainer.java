@@ -83,7 +83,7 @@ public class RobotContainer {
 
         intakeSim =
             IntakeSimulation.OverTheBumperIntake(
-                "Fuel", driveSim, Inches.of(20.125), Inches.of(10), IntakeSide.FRONT, 100);
+                "Fuel", driveSim, Inches.of(20.125), Inches.of(10), IntakeSide.FRONT, 40);
 
         // Add preload to sim
         intakeSim.setGamePiecesCount(8);

@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "DepotSideP1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "DepotSideP2"
+            "pathName": "Depot"
           }
         },
         {

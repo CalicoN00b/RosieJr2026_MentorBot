@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.AimAtHub;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.SuperstructureCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.intake.*;
@@ -190,7 +189,7 @@ public class RobotContainer {
 
     controller.rightBumper().whileTrue(SuperstructureCommands.intakeFuel(intake, intakeSim));
 
-    controller.x().whileTrue(ShooterCommands.runShooter(shooter));
+    controller.x().whileTrue(SuperstructureCommands.passFuel(shooter, driveSim, intakeSim));
 
     controller.y().whileTrue(new AimAtHub(drive, controller));
 

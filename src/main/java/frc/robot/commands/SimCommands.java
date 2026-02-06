@@ -13,8 +13,8 @@ import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
 
 public class SimCommands {
 
-  public static Command visualizeFuel(
-      Drive drive, SwerveDriveSimulation driveSim, IntakeSimulation intakeSimulation) {
+  public static Command visualizeScoringFuel(
+      Drive drive, SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
     return Commands.runOnce(
         () -> {
           double launchVelocity = 21 + 15 * ((drive.distanceFromHubFeet() - 4.1) / 13.2);
@@ -29,7 +29,25 @@ public class SimCommands {
                       Meters.of(0.1),
                       FeetPerSecond.of(launchVelocity),
                       Degrees.of(75)));
-          intakeSimulation.obtainGamePieceFromIntake();
+          intakeSim.obtainGamePieceFromIntake();
+        });
+  }
+
+  public static Command visualizePassingFuel(
+      SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
+    return Commands.runOnce(
+        () -> {
+          SimulatedArena.getInstance()
+              .addGamePieceProjectile(
+                  new RebuiltFuelOnFly(
+                      driveSim.getSimulatedDriveTrainPose().getTranslation(),
+                      new Translation2d(),
+                      driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                      driveSim.getSimulatedDriveTrainPose().getRotation(),
+                      Meters.of(0.1),
+                      FeetPerSecond.of(31),
+                      Degrees.of(75)));
+          intakeSim.obtainGamePieceFromIntake();
         });
   }
 

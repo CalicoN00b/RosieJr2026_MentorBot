@@ -40,7 +40,7 @@ public class SuperstructureCommands {
               ShooterCommands.runShooter(shooter),
               Commands.sequence(
                       Commands.waitUntil(drive::aimedAtHub),
-                      SimCommands.visualizeFuel(drive, driveSim, intakeSim)
+                      SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
                           .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
                       Commands.waitSeconds(0.08))
                   .repeatedly());
@@ -50,6 +50,26 @@ public class SuperstructureCommands {
     }
 
     return scoringCommand;
+  }
+
+  public static Command passFuel(
+      Shooter shooter, SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
+    Command passingCommand;
+
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      passingCommand =
+          Commands.parallel(
+              ShooterCommands.runShooter(shooter),
+              Commands.sequence(
+                      SimCommands.visualizePassingFuel(driveSim, intakeSim)
+                          .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
+                      Commands.waitSeconds(0.08))
+                  .repeatedly());
+    } else {
+      passingCommand = ShooterCommands.runShooter(shooter);
+    }
+
+    return passingCommand;
   }
 
   public static Command scoreFuelAuto(
@@ -63,7 +83,7 @@ public class SuperstructureCommands {
               ShooterCommands.runShooter(shooter),
               Commands.sequence(
                       Commands.waitUntil(drive::aimedAtHub),
-                      SimCommands.visualizeFuel(drive, driveSim, intakeSim)
+                      SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
                           .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
                       Commands.waitSeconds(0.08))
                   .repeatedly());

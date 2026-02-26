@@ -45,7 +45,7 @@ public class SimCommands {
                       driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
                       driveSim.getSimulatedDriveTrainPose().getRotation(),
                       Meters.of(0.1),
-                      FeetPerSecond.of(31),
+                      FeetPerSecond.of(20),
                       Degrees.of(75)));
           intakeSim.obtainGamePieceFromIntake();
         });

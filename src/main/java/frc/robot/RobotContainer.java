@@ -222,5 +222,6 @@ public class RobotContainer {
     Logger.recordOutput("FieldSimulation/RobotPosition", driveSim.getSimulatedDriveTrainPose());
     Logger.recordOutput(
         "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
+    Logger.recordOutput("FieldSimulation/FuelInIntake", intakeSim.getGamePiecesAmount());
   }
 }

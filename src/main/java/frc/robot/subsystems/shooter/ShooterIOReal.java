@@ -22,7 +22,7 @@ public class ShooterIOReal implements ShooterIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.Feedback.SensorToMechanismRatio = 0.75;
+    config.Feedback.SensorToMechanismRatio = 1;
 
     shooterMotor.getConfigurator().apply(config);
   }

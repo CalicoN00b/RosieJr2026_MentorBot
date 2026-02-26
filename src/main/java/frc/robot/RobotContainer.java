@@ -23,6 +23,7 @@ import frc.robot.commands.AimAtHub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.SuperstructureCommands;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.hopper.*;
 import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.*;
@@ -46,6 +47,7 @@ public class RobotContainer {
   private final Vision vision;
   private final Shooter shooter;
   private final Intake intake;
+  private final Hopper hopper;
 
   private SwerveDriveSimulation driveSim = null;
   private IntakeSimulation intakeSim = null;
@@ -72,6 +74,7 @@ public class RobotContainer {
         vision = new Vision(drive::addVisionMeasurement);
         shooter = new Shooter(new ShooterIOReal());
         intake = new Intake(new IntakeIOReal());
+        hopper = new Hopper(new HopperIOReal());
         break;
 
       case SIM:
@@ -109,6 +112,7 @@ public class RobotContainer {
                     driveSim::getSimulatedDriveTrainPose));
         shooter = new Shooter(new ShooterIOSim() {});
         intake = new Intake(new IntakeIOSim());
+        hopper = new Hopper(new HopperIO() {});
         break;
 
       default:
@@ -124,13 +128,15 @@ public class RobotContainer {
         vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
         shooter = new Shooter(new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
+        hopper = new Hopper(new HopperIO() {});
         break;
     }
 
     NamedCommands.registerCommands(
         Map.of(
-            "Intake", SuperstructureCommands.intakeFuel(intake, intakeSim),
-            "Shoot", SuperstructureCommands.scoreFuelAuto(drive, shooter, driveSim, intakeSim)));
+            "Intake", SuperstructureCommands.intakeFuel(intake, hopper, intakeSim),
+            "Shoot",
+                SuperstructureCommands.scoreFuelAuto(drive, shooter, hopper, driveSim, intakeSim)));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -187,16 +193,19 @@ public class RobotContainer {
     //             () -> -controller.getLeftX(),
     //             () -> Rotation2d.kZero));
 
-    controller.rightBumper().whileTrue(SuperstructureCommands.intakeFuel(intake, intakeSim));
+    controller
+        .rightBumper()
+        .whileTrue(SuperstructureCommands.intakeFuel(intake, hopper, intakeSim));
 
-    controller.x().whileTrue(SuperstructureCommands.passFuel(shooter, driveSim, intakeSim));
+    controller.x().whileTrue(SuperstructureCommands.passFuel(shooter, hopper, driveSim, intakeSim));
 
     controller.y().whileTrue(new AimAtHub(drive, controller));
 
     controller
         .rightTrigger()
         .whileTrue(
-            SuperstructureCommands.scoreFuel(drive, shooter, driveSim, intakeSim, controller));
+            SuperstructureCommands.scoreFuel(
+                drive, shooter, hopper, driveSim, intakeSim, controller));
   }
 
   /**

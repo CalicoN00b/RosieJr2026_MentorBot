@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -20,6 +21,7 @@ public class SuperstructureCommands {
    *
    * @param drive - Drive subsystem.
    * @param shooter - Intake subsystem.
+   * @param hopper - Hopper subsystem.
    * @param driveSim - Drive simulation. Only used in sim for visualzing fuel.
    * @param intakeSim - Intake simulation. Only used in sim for visualizing fuel.
    * @param controller - Drive controller.
@@ -28,6 +30,7 @@ public class SuperstructureCommands {
   public static Command scoreFuel(
       Drive drive,
       Shooter shooter,
+      Hopper hopper,
       SwerveDriveSimulation driveSim,
       IntakeSimulation intakeSim,
       CommandXboxController controller) {
@@ -38,6 +41,7 @@ public class SuperstructureCommands {
           Commands.parallel(
               new AimAtHub(drive, controller),
               ShooterCommands.runShooter(shooter),
+              HopperCommands.runHopper(hopper),
               Commands.sequence(
                       Commands.waitUntil(drive::aimedAtHub),
                       SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
@@ -46,34 +50,43 @@ public class SuperstructureCommands {
                   .repeatedly());
     } else {
       scoringCommand =
-          Commands.parallel(new AimAtHub(drive, controller), ShooterCommands.runShooter(shooter));
+          Commands.parallel(
+              new AimAtHub(drive, controller),
+              ShooterCommands.runShooter(shooter),
+              HopperCommands.runHopper(hopper));
     }
 
     return scoringCommand;
   }
 
   public static Command passFuel(
-      Shooter shooter, SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
+      Shooter shooter, Hopper hopper, SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
     Command passingCommand;
 
     if (Constants.currentMode == Constants.Mode.SIM) {
       passingCommand =
           Commands.parallel(
               ShooterCommands.runShooter(shooter),
+              HopperCommands.runHopper(hopper),
               Commands.sequence(
                       SimCommands.visualizePassingFuel(driveSim, intakeSim)
                           .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
                       Commands.waitSeconds(0.08))
                   .repeatedly());
     } else {
-      passingCommand = ShooterCommands.runShooter(shooter);
+      passingCommand =
+          Commands.parallel(ShooterCommands.runShooter(shooter), HopperCommands.runHopper(hopper));
     }
 
     return passingCommand;
   }
 
   public static Command scoreFuelAuto(
-      Drive drive, Shooter shooter, SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
+      Drive drive,
+      Shooter shooter,
+      Hopper hopper,
+      SwerveDriveSimulation driveSim,
+      IntakeSimulation intakeSim) {
     Command scoringCommand;
 
     if (Constants.currentMode == Constants.Mode.SIM) {
@@ -81,6 +94,7 @@ public class SuperstructureCommands {
           Commands.parallel(
               new AimAtHubAuto(drive),
               ShooterCommands.runShooter(shooter),
+              HopperCommands.runHopper(hopper),
               Commands.sequence(
                       Commands.waitUntil(drive::aimedAtHub),
                       SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
@@ -89,20 +103,27 @@ public class SuperstructureCommands {
                   .repeatedly());
     } else {
       scoringCommand =
-          Commands.parallel(new AimAtHubAuto(drive), ShooterCommands.runShooter(shooter));
+          Commands.parallel(
+              new AimAtHubAuto(drive),
+              ShooterCommands.runShooter(shooter),
+              HopperCommands.runHopper(hopper));
     }
 
     return scoringCommand;
   }
 
-  public static Command intakeFuel(Intake intake, IntakeSimulation intakeSim) {
+  public static Command intakeFuel(Intake intake, Hopper hopper, IntakeSimulation intakeSim) {
     Command intakeCommand;
 
     if (Constants.currentMode == Constants.Mode.SIM) {
       intakeCommand =
-          Commands.parallel(IntakeCommands.runIntake(intake), SimCommands.runIntake(intakeSim));
+          Commands.parallel(
+              IntakeCommands.runIntake(intake),
+              HopperCommands.runHopper(hopper),
+              SimCommands.runIntake(intakeSim));
     } else {
-      intakeCommand = IntakeCommands.runIntake(intake);
+      intakeCommand =
+          Commands.parallel(IntakeCommands.runIntake(intake), HopperCommands.runHopper(hopper));
     }
 
     return intakeCommand;

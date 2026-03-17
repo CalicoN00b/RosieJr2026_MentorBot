@@ -5,9 +5,9 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.vision;
+package frc.robot.subsystems.vision.photonvision;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
+import static frc.robot.subsystems.vision.photonvision.PhotonVisionConstants.*;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,7 +19,7 @@ import java.util.Set;
 import org.photonvision.PhotonCamera;
 
 /** IO implementation for real PhotonVision hardware. */
-public class VisionIOPhotonVision implements VisionIO {
+public class PhotonVisionIOReal implements PhotonVisionIO {
   protected final PhotonCamera camera;
   protected final Transform3d robotToCamera;
 
@@ -29,13 +29,13 @@ public class VisionIOPhotonVision implements VisionIO {
    * @param name The configured name of the camera.
    * @param robotToCamera The 3D position of the camera relative to the robot.
    */
-  public VisionIOPhotonVision(String name, Transform3d robotToCamera) {
+  public PhotonVisionIOReal(String name, Transform3d robotToCamera) {
     camera = new PhotonCamera(name);
     this.robotToCamera = robotToCamera;
   }
 
   @Override
-  public void updateInputs(VisionIOInputs inputs) {
+  public void updateInputs(PhotonVisionIOInputs inputs) {
     inputs.connected = camera.isConnected();
 
     // Read new camera observations
@@ -77,8 +77,7 @@ public class VisionIOPhotonVision implements VisionIO {
                 robotPose, // 3D pose estimate
                 multitagResult.estimatedPose.ambiguity, // Ambiguity
                 multitagResult.fiducialIDsUsed.size(), // Tag count
-                totalTagDistance / result.targets.size(), // Average tag distance
-                PoseObservationType.PHOTONVISION)); // Observation type
+                totalTagDistance / result.targets.size())); // Average tag distance
 
       } else if (!result.targets.isEmpty()) { // Single tag result
         var target = result.targets.get(0);
@@ -103,8 +102,7 @@ public class VisionIOPhotonVision implements VisionIO {
                   robotPose, // 3D pose estimate
                   target.poseAmbiguity, // Ambiguity
                   1, // Tag count
-                  cameraToTarget.getTranslation().getNorm(), // Average tag distance
-                  PoseObservationType.PHOTONVISION)); // Observation type
+                  cameraToTarget.getTranslation().getNorm())); // Average tag distance
         }
       }
     }

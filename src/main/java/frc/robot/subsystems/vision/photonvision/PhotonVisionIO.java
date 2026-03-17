@@ -5,15 +5,15 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.vision;
+package frc.robot.subsystems.vision.photonvision;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-public interface VisionIO {
+public interface PhotonVisionIO {
   @AutoLog
-  public static class VisionIOInputs {
+  public static class PhotonVisionIOInputs {
     public boolean connected = false;
     public TargetObservation latestTargetObservation =
         new TargetObservation(Rotation2d.kZero, Rotation2d.kZero);
@@ -26,17 +26,7 @@ public interface VisionIO {
 
   /** Represents a robot pose sample used for pose estimation. */
   public static record PoseObservation(
-      double timestamp,
-      Pose3d pose,
-      double ambiguity,
-      int tagCount,
-      double averageTagDistance,
-      PoseObservationType type) {}
+      double timestamp, Pose3d pose, double ambiguity, int tagCount, double averageTagDistance) {}
 
-  public static enum PoseObservationType {
-    PHOTONVISION,
-    QUESTNAV
-  }
-
-  public default void updateInputs(VisionIOInputs inputs) {}
+  public default void updateInputs(PhotonVisionIOInputs inputs) {}
 }

@@ -5,9 +5,9 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.vision;
+package frc.robot.subsystems.vision.photonvision;
 
-import static frc.robot.subsystems.vision.VisionConstants.aprilTagLayout;
+import static frc.robot.subsystems.vision.photonvision.PhotonVisionConstants.aprilTagLayout;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -17,7 +17,7 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 
 /** IO implementation for physics sim using PhotonVision simulator. */
-public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
+public class PhotonVisionIOSim extends PhotonVisionIOReal {
   private static VisionSystemSim visionSim;
 
   private final Supplier<Pose2d> poseSupplier;
@@ -29,8 +29,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
    * @param name The name of the camera.
    * @param poseSupplier Supplier for the robot pose to use in simulation.
    */
-  public VisionIOPhotonVisionSim(
-      String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
+  public PhotonVisionIOSim(String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier) {
     super(name, robotToCamera);
     this.poseSupplier = poseSupplier;
 
@@ -47,7 +46,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
   }
 
   @Override
-  public void updateInputs(VisionIOInputs inputs) {
+  public void updateInputs(PhotonVisionIOInputs inputs) {
     visionSim.update(poseSupplier.get());
     super.updateInputs(inputs);
   }

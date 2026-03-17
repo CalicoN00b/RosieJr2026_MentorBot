@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.AimAtHub;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.SuperstructureCommands;
@@ -26,7 +25,8 @@ import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.hopper.*;
 import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.shooter.*;
-import frc.robot.subsystems.vision.*;
+import frc.robot.subsystems.vision.photonvision.*;
+import frc.robot.subsystems.vision.questnav.*;
 import java.util.Map;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
@@ -44,10 +44,11 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final Vision vision;
   private final Shooter shooter;
   private final Intake intake;
   private final Hopper hopper;
+  private final PhotonVision photonVision;
+  private final QuestNav questNav;
 
   private SwerveDriveSimulation driveSim = null;
   private IntakeSimulation intakeSim = null;
@@ -71,10 +72,17 @@ public class RobotContainer {
                 new ModuleIOReal(2),
                 new ModuleIOReal(3),
                 (pose) -> {});
-        vision = new Vision(drive::addVisionMeasurement);
         shooter = new Shooter(new ShooterIOReal());
         intake = new Intake(new IntakeIOReal());
         hopper = new Hopper(new HopperIOReal());
+        photonVision =
+            new PhotonVision(
+                drive,
+                new PhotonVisionIOReal(
+                    PhotonVisionConstants.camera0Name, PhotonVisionConstants.robotToCamera0),
+                new PhotonVisionIOReal(
+                    PhotonVisionConstants.camera1Name, PhotonVisionConstants.robotToCamera1));
+        questNav = new QuestNav(new QuestNavIOReal(drive));
         break;
 
       case SIM:
@@ -99,20 +107,21 @@ public class RobotContainer {
                 new ModuleIOSim(driveSim.getModules()[2]),
                 new ModuleIOSim(driveSim.getModules()[3]),
                 driveSim::setSimulationWorldPose);
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(
-                    VisionConstants.camera0Name,
-                    VisionConstants.robotToCamera0,
+        photonVision =
+            new PhotonVision(
+                drive,
+                new PhotonVisionIOSim(
+                    PhotonVisionConstants.camera0Name,
+                    PhotonVisionConstants.robotToCamera0,
                     driveSim::getSimulatedDriveTrainPose),
-                new VisionIOPhotonVisionSim(
-                    VisionConstants.camera1Name,
-                    VisionConstants.robotToCamera1,
+                new PhotonVisionIOSim(
+                    PhotonVisionConstants.camera1Name,
+                    PhotonVisionConstants.robotToCamera1,
                     driveSim::getSimulatedDriveTrainPose));
         shooter = new Shooter(new ShooterIOSim() {});
         intake = new Intake(new IntakeIOSim());
         hopper = new Hopper(new HopperIO() {});
+        questNav = new QuestNav(new QuestNavIO() {});
         break;
 
       default:
@@ -125,10 +134,11 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 (pose) -> {});
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {});
+        photonVision = new PhotonVision(drive, new PhotonVisionIO() {});
         shooter = new Shooter(new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIO() {});
+        questNav = new QuestNav(new QuestNavIO() {});
         break;
     }
 
@@ -140,22 +150,6 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-
-    // Set up SysId routines
-    autoChooser.addOption(
-        "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
-    autoChooser.addOption(
-        "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Forward)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Quasistatic Reverse)",
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
-    autoChooser.addOption(
-        "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
     // Configure the button bindings
     configureButtonBindings();
@@ -182,16 +176,6 @@ public class RobotContainer {
             ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
             : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
     controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
-
-    // Lock to 0° when A button is held
-    // controller
-    //     .a()
-    //     .whileTrue(
-    //         DriveCommands.joystickDriveAtAngle(
-    //             drive,
-    //             () -> -controller.getLeftY(),
-    //             () -> -controller.getLeftX(),
-    //             () -> Rotation2d.kZero));
 
     controller
         .rightBumper()

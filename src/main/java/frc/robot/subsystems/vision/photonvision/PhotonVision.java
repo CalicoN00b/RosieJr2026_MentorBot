@@ -5,9 +5,9 @@
 // license that can be found in the LICENSE file
 // at the root directory of this project.
 
-package frc.robot.subsystems.vision;
+package frc.robot.subsystems.vision.photonvision;
 
-import static frc.robot.subsystems.vision.VisionConstants.*;
+import static frc.robot.subsystems.vision.photonvision.PhotonVisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -19,25 +19,25 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
+import frc.robot.subsystems.drive.Drive;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
-public class Vision extends SubsystemBase {
-  private final VisionConsumer consumer;
-  private final VisionIO[] io;
-  private final VisionIOInputsAutoLogged[] inputs;
+public class PhotonVision extends SubsystemBase {
+  private final Drive drive;
+  private final PhotonVisionIO[] io;
+  private final PhotonVisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
 
-  public Vision(VisionConsumer consumer, VisionIO... io) {
-    this.consumer = consumer;
+  public PhotonVision(Drive drive, PhotonVisionIO... io) {
+    this.drive = drive;
     this.io = io;
 
     // Initialize inputs
-    this.inputs = new VisionIOInputsAutoLogged[io.length];
+    this.inputs = new PhotonVisionIOInputsAutoLogged[io.length];
     for (int i = 0; i < inputs.length; i++) {
-      inputs[i] = new VisionIOInputsAutoLogged();
+      inputs[i] = new PhotonVisionIOInputsAutoLogged();
     }
 
     // Initialize disconnected alerts
@@ -45,7 +45,8 @@ public class Vision extends SubsystemBase {
     for (int i = 0; i < inputs.length; i++) {
       disconnectedAlerts[i] =
           new Alert(
-              "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
+              "PhotonVision camera " + Integer.toString(i) + " is disconnected.",
+              AlertType.kWarning);
     }
   }
 
@@ -62,7 +63,7 @@ public class Vision extends SubsystemBase {
   public void periodic() {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
-      Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
+      Logger.processInputs("PhotonVision/Camera" + Integer.toString(i), inputs[i]);
     }
 
     // Initialize logging values
@@ -94,9 +95,7 @@ public class Vision extends SubsystemBase {
       for (var observation : inputs[cameraIndex].poseObservations) {
         // Check whether to reject pose
         boolean rejectPose =
-            observation.type() == PoseObservationType.PHOTONVISION
-                    && // Don't reject QuestNav poses
-                    observation.tagCount() == 0 // Must have at least one tag
+            observation.tagCount() == 0 // Must have at least one tag
                 || (observation.tagCount() == 1
                     && observation.ambiguity() > maxAmbiguity) // Cannot be high ambiguity
                 || Math.abs(observation.pose().getZ())
@@ -123,9 +122,7 @@ public class Vision extends SubsystemBase {
 
         // Calculate standard deviations
         double stdDevFactor =
-            observation.type() == PoseObservationType.PHOTONVISION
-                ? Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount()
-                : 1;
+            Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
         double linearStdDev = linearStdDevBaseline * stdDevFactor;
         double angularStdDev = angularStdDevBaseline * stdDevFactor;
         if (cameraIndex < cameraStdDevFactors.length) {
@@ -134,7 +131,7 @@ public class Vision extends SubsystemBase {
         }
 
         // Send vision observation
-        consumer.accept(
+        drive.addVisionMeasurement(
             observation.pose().toPose2d(),
             observation.timestamp(),
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
@@ -142,16 +139,16 @@ public class Vision extends SubsystemBase {
 
       // Log camera metadata
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
+          "PhotonVision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
           tagPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
+          "PhotonVision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
           robotPoses.toArray(new Pose3d[0]));
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
+          "PhotonVision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
           robotPosesAccepted.toArray(new Pose3d[0]));
       Logger.recordOutput(
-          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
+          "PhotonVision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
           robotPosesRejected.toArray(new Pose3d[0]));
       allTagPoses.addAll(tagPoses);
       allRobotPoses.addAll(robotPoses);
@@ -160,12 +157,12 @@ public class Vision extends SubsystemBase {
     }
 
     // Log summary data
-    Logger.recordOutput("Vision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
-    Logger.recordOutput("Vision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
+    Logger.recordOutput("PhotonVision/Summary/TagPoses", allTagPoses.toArray(new Pose3d[0]));
+    Logger.recordOutput("PhotonVision/Summary/RobotPoses", allRobotPoses.toArray(new Pose3d[0]));
     Logger.recordOutput(
-        "Vision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
+        "PhotonVision/Summary/RobotPosesAccepted", allRobotPosesAccepted.toArray(new Pose3d[0]));
     Logger.recordOutput(
-        "Vision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
+        "PhotonVision/Summary/RobotPosesRejected", allRobotPosesRejected.toArray(new Pose3d[0]));
   }
 
   @FunctionalInterface

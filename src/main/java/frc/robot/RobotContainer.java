@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.Mode;
 import frc.robot.commands.AimAtHub;
 import frc.robot.commands.AimAtHubAuto;
 import frc.robot.commands.DriveCommands;
@@ -182,15 +181,23 @@ public class RobotContainer {
         Map.of(
             "Intake",
                 Commands.parallel(
-                    intake.runWheelsDutyCycleCommand(1), hopper.runHopperDutyCycleCommand(0.7)),
+                        intake.runWheelsDutyCycleCommand(1), hopper.runHopperDutyCycleCommand(0.7))
+                    .alongWith(
+                        SimCommands.runIntake(intakeSim)
+                            .onlyIf(() -> Constants.currentMode == Constants.Mode.SIM)),
             "Shoot",
                 Commands.parallel(
                         new AimAtHubAuto(drive),
                         shooter.runShooterCommand(drive::distanceFromHubFeet))
                     .onlyWhile(() -> !(drive.aimedAtHub() || shooter.atSetpoint()))
                     .andThen(
-                        shooter.runShooterCommand(drive::distanceFromHubFeet),
-                        hopper.runHopperDutyCycleCommand(0.7))));
+                        Commands.parallel(
+                            shooter.runShooterCommand(drive::distanceFromHubFeet),
+                            hopper.runHopperDutyCycleCommand(0.7),
+                            Commands.repeatingSequence(
+                                    SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim),
+                                    Commands.waitSeconds(0.08))
+                                .onlyIf(() -> Constants.currentMode == Constants.Mode.SIM)))));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -238,28 +245,41 @@ public class RobotContainer {
     //     .and(() -> drive.aimedAtHub() && shooter.atSetpoint())
     //     .whileTrue(hopper.runHopperDutyCycleCommand(0.7));
 
-    if (Constants.currentMode == Mode.SIM) {
-      controller
-          .rightTrigger()
-          .whileTrue(new AimAtHub(drive, controller))
-          .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
-          .and(drive::aimedAtHub)
-          .and(shooter::atSetpoint)
-          .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
-          .whileTrue(
-              Commands.repeatingSequence(
-                  SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
-                      .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
-                  Commands.waitSeconds(0.08)));
-    } else {
-      controller
-          .rightTrigger()
-          .whileTrue(new AimAtHub(drive, controller))
-          .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
-          .and(drive::aimedAtHub)
-          .and(shooter::atSetpoint)
-          .whileTrue(hopper.runHopperDutyCycleCommand(0.7));
-    }
+    // if (Constants.currentMode == Mode.SIM) {
+    //   controller
+    //       .rightTrigger()
+    //       .whileTrue(new AimAtHub(drive, controller))
+    //       .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
+    //       .and(drive::aimedAtHub)
+    //       .and(shooter::atSetpoint)
+    //       .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
+    //       .whileTrue(
+    //           Commands.repeatingSequence(
+    //               SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
+    //                   .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
+    //               Commands.waitSeconds(0.08)));
+    // } else {
+    //   controller
+    //       .rightTrigger()
+    //       .whileTrue(new AimAtHub(drive, controller))
+    //       .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
+    //       .and(drive::aimedAtHub)
+    //       .and(shooter::atSetpoint)
+    //       .whileTrue(hopper.runHopperDutyCycleCommand(0.7));
+    // }
+
+    controller
+        .rightTrigger()
+        .whileTrue(new AimAtHub(drive, controller))
+        .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
+        .and(drive::aimedAtHub)
+        .and(shooter::atSetpoint)
+        .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
+        .and(() -> Constants.currentMode == Constants.Mode.SIM)
+        .whileTrue(
+            Commands.repeatingSequence(
+                SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim),
+                Commands.waitSeconds(0.08)));
   }
 
   /**

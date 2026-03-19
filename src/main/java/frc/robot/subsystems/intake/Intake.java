@@ -8,9 +8,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
-
-import java.util.function.DoubleSupplier;
-
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
@@ -53,9 +50,6 @@ public class Intake extends SubsystemBase {
   }
 
   public Command runWheelsDutyCycleCommand(double speed) {
-    return Commands.runEnd(
-      () -> setWheelsDutyCycle(speed), 
-      this::stopWheels, 
-      this);
+    return Commands.runEnd(() -> setWheelsDutyCycle(speed), this::stopWheels, this);
   }
 }

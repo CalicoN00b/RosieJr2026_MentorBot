@@ -24,9 +24,11 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.Mode;
 import frc.robot.commands.AimAtHub;
+import frc.robot.commands.AimAtHubAuto;
 import frc.robot.commands.DriveCommands;
-import frc.robot.commands.SuperstructureCommands;
+import frc.robot.commands.SimCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.hopper.*;
 import frc.robot.subsystems.intake.*;
@@ -178,9 +180,17 @@ public class RobotContainer {
     // Register NamedCommands for PathPlanner
     NamedCommands.registerCommands(
         Map.of(
-            "Intake", SuperstructureCommands.intakeFuel(intake, hopper, intakeSim),
+            "Intake",
+                Commands.parallel(
+                    intake.runWheelsDutyCycleCommand(1), hopper.runHopperDutyCycleCommand(0.7)),
             "Shoot",
-                SuperstructureCommands.scoreFuelAuto(drive, shooter, hopper, driveSim, intakeSim)));
+                Commands.parallel(
+                        new AimAtHubAuto(drive),
+                        shooter.runShooterCommand(drive::distanceFromHubFeet))
+                    .onlyWhile(() -> !(drive.aimedAtHub() || shooter.atSetpoint()))
+                    .andThen(
+                        shooter.runShooterCommand(drive::distanceFromHubFeet),
+                        hopper.runHopperDutyCycleCommand(0.7))));
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -204,26 +214,52 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // Reset gyro to 0° when start button is pressed
-    final Runnable resetGryo =
-        Constants.currentMode == Constants.Mode.SIM
-            ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
-            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
-    controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
+    // // Reset gyro to 0° when start button is pressed
+    // final Runnable resetGryo =
+    //     Constants.currentMode == Constants.Mode.SIM
+    //         ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
+    //         : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(),
+    // Rotation2d.kZero));
+    // controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
 
-    controller
-        .rightBumper()
-        .whileTrue(SuperstructureCommands.intakeFuel(intake, hopper, intakeSim));
+    // controller
+    //     .rightBumper()
+    //     .whileTrue(SuperstructureCommands.intakeFuel(intake, hopper, intakeSim));
 
-    controller.x().whileTrue(SuperstructureCommands.passFuel(shooter, hopper, driveSim, intakeSim));
+    // controller.x().whileTrue(SuperstructureCommands.passFuel(shooter, hopper, driveSim,
+    // intakeSim));
 
-    controller.y().whileTrue(new AimAtHub(drive, controller));
+    // controller.y().whileTrue(new AimAtHub(drive, controller));
 
-    controller
-        .rightTrigger()
-        .whileTrue(
-            SuperstructureCommands.scoreFuel(
-                drive, shooter, hopper, driveSim, intakeSim, controller));
+    // controller
+    //     .rightTrigger()
+    //     .whileTrue(new AimAtHub(drive, controller))
+    //     .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
+    //     .and(() -> drive.aimedAtHub() && shooter.atSetpoint())
+    //     .whileTrue(hopper.runHopperDutyCycleCommand(0.7));
+
+    if (Constants.currentMode == Mode.SIM) {
+      controller
+          .rightTrigger()
+          .whileTrue(new AimAtHub(drive, controller))
+          .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
+          .and(drive::aimedAtHub)
+          .and(shooter::atSetpoint)
+          .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
+          .whileTrue(
+              Commands.repeatingSequence(
+                  SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
+                      .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
+                  Commands.waitSeconds(0.08)));
+    } else {
+      controller
+          .rightTrigger()
+          .whileTrue(new AimAtHub(drive, controller))
+          .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
+          .and(drive::aimedAtHub)
+          .and(shooter::atSetpoint)
+          .whileTrue(hopper.runHopperDutyCycleCommand(0.7));
+    }
   }
 
   /**

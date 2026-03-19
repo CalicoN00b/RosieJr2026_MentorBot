@@ -3,9 +3,14 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
@@ -41,5 +46,16 @@ public class Intake extends SubsystemBase {
 
   public void setWheelsVelocity(double velocityRadPerSec) {
     io.setWheelsVelocity(velocityRadPerSec);
+  }
+
+  public void stopWheels() {
+    io.setWheelsOpenLoop(0);
+  }
+
+  public Command runWheelsDutyCycleCommand(double speed) {
+    return Commands.runEnd(
+      () -> setWheelsDutyCycle(speed), 
+      this::stopWheels, 
+      this);
   }
 }

@@ -2,9 +2,14 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -52,5 +57,37 @@ public class Shooter extends SubsystemBase {
     double lowerLimit = setpoint * 0.98;
 
     return lowerLimit <= inputs.velocityRadPerSec && inputs.velocityRadPerSec <= upperLimit;
+  }
+
+  @AutoLogOutput(key = "Shooter/CalculatedVelocity")
+  public double calculateShooterVelocity(double distanceToHub) {
+    return (21
+        + 15
+            * (distanceToHub - 4.1)
+            / 13.2); // * 1.047 * 5.75 * 2. May also need rotationsToRadians
+  }
+
+  public Command runShooterDutyCycleCommand(double speed) {
+    return Commands.runEnd(
+      () -> setDutyCycle(speed), 
+      this::setNeutral, 
+      this);
+  }
+
+  public Command runShooterFixedVelocityCommand(double velocityRadsPerSec) {
+    return Commands.runEnd(
+      () -> setVelocity(velocityRadsPerSec), 
+      this::setNeutral, 
+      this);
+  }
+
+  public Command runShooterCommand(DoubleSupplier distanceToHub) {
+    return Commands.runEnd(
+      () -> {
+        DoubleSupplier calculatedVelocity = () -> calculateShooterVelocity(distanceToHub.getAsDouble());
+        setVelocity(calculatedVelocity.getAsDouble());
+      }, 
+      this::setNeutral,
+      this);
   }
 }

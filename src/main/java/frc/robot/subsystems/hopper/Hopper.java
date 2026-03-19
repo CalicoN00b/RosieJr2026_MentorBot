@@ -2,8 +2,13 @@ package frc.robot.subsystems.hopper;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.Logger;
 
 public class Hopper extends SubsystemBase {
@@ -27,5 +32,16 @@ public class Hopper extends SubsystemBase {
 
   public void setDutyCycle(double output) {
     io.setOpenLoop(output);
+  }
+
+  public void stop() {
+    io.setOpenLoop(0);
+  }
+
+  public Command runHopperDutyCycleCommand(double speed) {
+    return Commands.runEnd(
+      () -> setDutyCycle(speed), 
+      this::stop, 
+      this);
   }
 }

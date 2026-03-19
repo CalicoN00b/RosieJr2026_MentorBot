@@ -189,7 +189,7 @@ public class RobotContainer {
                 Commands.parallel(
                         new AimAtHubAuto(drive),
                         shooter.runShooterCommand(drive::distanceFromHubFeet))
-                    .onlyWhile(() -> !(drive.aimedAtHub() || shooter.atSetpoint()))
+                    .onlyWhile(() -> !(drive.aimedAtHub() && shooter.atSetpoint()))
                     .andThen(
                         Commands.parallel(
                             shooter.runShooterCommand(drive::distanceFromHubFeet),
@@ -280,6 +280,13 @@ public class RobotContainer {
             Commands.repeatingSequence(
                 SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim),
                 Commands.waitSeconds(0.08)));
+
+    controller
+        .rightBumper()
+        .whileTrue(intake.runWheelsDutyCycleCommand(1))
+        .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
+        .and(() -> Constants.currentMode == Constants.Mode.SIM)
+        .whileTrue(SimCommands.runIntake(intakeSim));
   }
 
   /**

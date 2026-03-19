@@ -5,12 +5,15 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
 
   private final ShooterIO io;
   private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
+
+  private double setpoint = 0;
 
   private final Alert shooterDisconnectedAlert =
       new Alert("Shooter disconnected!", AlertType.kError);
@@ -32,10 +35,22 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setVelocity(double velocityRadPerSec) {
+    setpoint = velocityRadPerSec;
     io.setShooterVelocity(velocityRadPerSec);
   }
 
   public void setNeutral() {
+    setpoint = 0;
     io.setShooterNeutral();
+  }
+
+  @AutoLogOutput(key = "Shooter/AtSetpoint")
+  public boolean atSetpoint() {
+    if (setpoint == 0) return true;
+
+    double upperLimit = setpoint * 1.02;
+    double lowerLimit = setpoint * 0.98;
+
+    return lowerLimit <= inputs.velocityRadPerSec && inputs.velocityRadPerSec <= upperLimit;
   }
 }

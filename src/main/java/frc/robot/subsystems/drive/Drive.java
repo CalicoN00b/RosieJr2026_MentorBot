@@ -260,7 +260,7 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the current odometry pose. */
-  @AutoLogOutput(key = "Odometry/Robot")
+  @AutoLogOutput(key = "Drive/RobotPose")
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
   }
@@ -295,7 +295,7 @@ public class Drive extends SubsystemBase {
     return maxSpeedMetersPerSec / driveBaseRadius;
   }
 
-  @AutoLogOutput(key = "Odometry/AimedAtHub")
+  @AutoLogOutput(key = "Drive/AimedAtHub")
   public boolean aimedAtHub() {
     boolean isFlipped = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
     Pose2d currentPose = getPose();
@@ -309,7 +309,7 @@ public class Drive extends SubsystemBase {
     return Math.abs(currentPose.getRotation().getDegrees() - currentToHubAngle.getDegrees()) < 1;
   }
 
-  @AutoLogOutput(key = "Odometry/DistanceFromHub")
+  @AutoLogOutput(key = "Drive/DistanceFromHub")
   public double distanceFromHubFeet() {
     boolean isFlipped = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
     Pose2d currentPose = getPose();

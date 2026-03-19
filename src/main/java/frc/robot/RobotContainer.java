@@ -168,11 +168,11 @@ public class RobotContainer {
     Pathfinding.setPathfinder(new LocalADStarAK());
     PathPlannerLogging.setLogActivePathCallback(
         (activePath) -> {
-          Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[0]));
+          Logger.recordOutput("Drive/Trajectory", activePath.toArray(new Pose2d[0]));
         });
     PathPlannerLogging.setLogTargetPoseCallback(
         (targetPose) -> {
-          Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+          Logger.recordOutput("Drive/TrajectorySetpoint", targetPose);
         });
 
     // Register NamedCommands for PathPlanner
@@ -246,7 +246,7 @@ public class RobotContainer {
     if (Constants.currentMode != Constants.Mode.SIM) return;
 
     SimulatedArena.getInstance().simulationPeriodic();
-    Logger.recordOutput("FieldSimulation/RobotPosition", driveSim.getSimulatedDriveTrainPose());
+    Logger.recordOutput("FieldSimulation/RobotPose", driveSim.getSimulatedDriveTrainPose());
     Logger.recordOutput(
         "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
     Logger.recordOutput("FieldSimulation/FuelInIntake", intakeSim.getGamePiecesAmount());

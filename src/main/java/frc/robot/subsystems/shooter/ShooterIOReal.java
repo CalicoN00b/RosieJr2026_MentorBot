@@ -1,20 +1,29 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.NeutralOut;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.BangBangController;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 
 public class ShooterIOReal implements ShooterIO {
 
   private final TalonFX shooterMotor;
-  private final BangBangController bangBang = new BangBangController();
+
+  StatusSignal<Voltage> motorVoltage;
+  StatusSignal<Current> motorCurrent;
+  StatusSignal<AngularVelocity> motorAngularVelocity;
+
+  DutyCycleOut dutyCycleControl = new DutyCycleOut(0);
+  VelocityVoltage velocityVoltageControl = new VelocityVoltage(null);
+  NeutralOut neutralOutControl = new NeutralOut();
 
   public ShooterIOReal() {
     shooterMotor = new TalonFX(0);
@@ -23,34 +32,36 @@ public class ShooterIOReal implements ShooterIO {
     config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     config.Feedback.SensorToMechanismRatio = 1;
+    config.Slot0.kP = 0.02;
 
     shooterMotor.getConfigurator().apply(config);
+
+    motorVoltage = shooterMotor.getMotorVoltage();
+    motorCurrent = shooterMotor.getSupplyCurrent();
+    motorAngularVelocity = shooterMotor.getRotorVelocity();
   }
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
     inputs.connected = shooterMotor.isConnected();
-    inputs.appliedVolts = shooterMotor.getMotorVoltage().getValueAsDouble();
-    inputs.currentAmps = shooterMotor.getSupplyCurrent().getValueAsDouble();
-    inputs.velocityRadPerSec = shooterMotor.getRotorVelocity().getValueAsDouble() * 2 * Math.PI;
+    inputs.appliedVolts = motorVoltage.getValueAsDouble();
+    inputs.currentAmps = motorCurrent.getValueAsDouble();
+    inputs.velocityRadPerSec = Units.rotationsToRadians(motorAngularVelocity.getValueAsDouble());
   }
 
   @Override
   public void setShooterDutyCycle(double output) {
-    shooterMotor.setControl(new DutyCycleOut(output));
+    shooterMotor.setControl(dutyCycleControl.withOutput(output));
   }
 
   @Override
   public void setShooterVelocity(double velocityRadPerSec) {
-    setShooterDutyCycle(
-        bangBang.calculate(
-            RotationsPerSecond.of(shooterMotor.getRotorVelocity().getValueAsDouble())
-                .in(RadiansPerSecond),
-            velocityRadPerSec));
+    shooterMotor.setControl(
+        velocityVoltageControl.withVelocity(Units.radiansToRotations(velocityRadPerSec)));
   }
 
   @Override
   public void setShooterNeutral() {
-    shooterMotor.setControl(new NeutralOut());
+    shooterMotor.setControl(neutralOutControl);
   }
 }

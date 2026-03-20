@@ -20,7 +20,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -34,6 +38,7 @@ import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.shooter.*;
 import frc.robot.subsystems.vision.photonvision.*;
 import frc.robot.subsystems.vision.questnav.*;
+import frc.robot.util.HubShiftUtil;
 import frc.robot.util.LocalADStarAK;
 import java.util.Map;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -202,6 +207,7 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
+    initializeElastic();
   }
 
   /**
@@ -226,6 +232,9 @@ public class RobotContainer {
             : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
     controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
 
+    // Sequence for shooting at the hub.
+    // Auto aims and warms up the shooter
+    // Then spins up the hopper to feed the shooter
     controller
         .rightTrigger()
         .whileTrue(new AimAtHub(drive, controller))
@@ -237,6 +246,16 @@ public class RobotContainer {
         .whileTrue(SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim));
 
     controller
+        .rightTrigger()
+        .and(() -> !HubShiftUtil.isHubActive())
+        .onTrue(
+            Commands.runEnd(
+                    () -> controller.setRumble(RumbleType.kBothRumble, 1),
+                    () -> controller.setRumble(RumbleType.kBothRumble, 0))
+                .withTimeout(0.5));
+
+    // Sequence for passing fuel
+    controller
         .leftTrigger()
         .whileTrue(
             Commands.parallel(
@@ -244,6 +263,7 @@ public class RobotContainer {
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
         .whileTrue(SimCommands.visualizePassingFuel(driveSim, intakeSim));
 
+    // Sequence for intaking fuel
     controller
         .rightBumper()
         .whileTrue(intake.runWheelsDutyCycleCommand(1))
@@ -276,5 +296,21 @@ public class RobotContainer {
     Logger.recordOutput(
         "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
     Logger.recordOutput("FieldSimulation/FuelInIntake", intakeSim.getGamePiecesAmount());
+  }
+
+  private void initializeElastic() {
+    ShuffleboardTab teleopTab = Shuffleboard.getTab("Teleop");
+
+    teleopTab
+        .addBoolean("Hub Active", HubShiftUtil::isHubActive)
+        .withWidget(BuiltInWidgets.kBooleanBox)
+        .withSize(7, 2)
+        .withPosition(3, 0);
+
+    teleopTab
+        .addDouble("Match Time", DriverStation::getMatchTime)
+        .withWidget(BuiltInWidgets.kTextView)
+        .withSize(5, 2)
+        .withPosition(4, 2);
   }
 }

@@ -22,9 +22,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -71,6 +69,9 @@ public class RobotContainer {
 
   // Dashboard inputs
   private final LoggedDashboardChooser<Command> autoChooser;
+
+  // Overrides
+  private boolean shootOverride = false; // If true, allows you to auto shoot when hub is inactive.
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -207,7 +208,6 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
-    initializeElastic();
   }
 
   /**
@@ -237,6 +237,8 @@ public class RobotContainer {
     // Then spins up the hopper to feed the shooter
     controller
         .rightTrigger()
+        .and(() -> HubShiftUtil.isHubActive())
+        .or(() -> shootOverride)
         .whileTrue(new AimAtHub(drive, controller))
         .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
         .and(drive::aimedAtHub)
@@ -248,6 +250,7 @@ public class RobotContainer {
     controller
         .rightTrigger()
         .and(() -> !HubShiftUtil.isHubActive())
+        .and(() -> !shootOverride) // Don't rumble if shoot override is on
         .onTrue(
             Commands.runEnd(
                     () -> controller.setRumble(RumbleType.kBothRumble, 1),
@@ -270,6 +273,11 @@ public class RobotContainer {
         .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
         .whileTrue(SimCommands.runIntake(intakeSim));
+
+    controller
+        .povUp()
+        .onTrue(Commands.runOnce(() -> shootOverride = true).ignoringDisable(true))
+        .onFalse(Commands.runOnce(() -> shootOverride = false).ignoringDisable(true));
   }
 
   /**
@@ -298,19 +306,9 @@ public class RobotContainer {
     Logger.recordOutput("FieldSimulation/FuelInIntake", intakeSim.getGamePiecesAmount());
   }
 
-  private void initializeElastic() {
-    ShuffleboardTab teleopTab = Shuffleboard.getTab("Teleop");
-
-    teleopTab
-        .addBoolean("Hub Active", HubShiftUtil::isHubActive)
-        .withWidget(BuiltInWidgets.kBooleanBox)
-        .withSize(7, 2)
-        .withPosition(3, 0);
-
-    teleopTab
-        .addDouble("Match Time", DriverStation::getMatchTime)
-        .withWidget(BuiltInWidgets.kTextView)
-        .withSize(5, 2)
-        .withPosition(4, 2);
+  public void updateElastic() {
+    SmartDashboard.putBoolean("Hub Active", HubShiftUtil.isHubActive());
+    SmartDashboard.putBoolean("Shoot Override", shootOverride);
+    SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
   }
 }

@@ -101,7 +101,7 @@ public class RobotContainer {
 
         intakeSim =
             IntakeSimulation.OverTheBumperIntake(
-                "Fuel", driveSim, Inches.of(20.125), Inches.of(10), IntakeSide.FRONT, 40);
+                "Fuel", driveSim, Inches.of(27), Inches.of(10), IntakeSide.FRONT, 40);
 
         // Add preload to sim
         intakeSim.setGamePiecesCount(8);
@@ -222,51 +222,11 @@ public class RobotContainer {
             () -> -controller.getRightX()));
 
     // // Reset gyro to 0° when start button is pressed
-    // final Runnable resetGryo =
-    //     Constants.currentMode == Constants.Mode.SIM
-    //         ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
-    //         : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(),
-    // Rotation2d.kZero));
-    // controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
-
-    // controller
-    //     .rightBumper()
-    //     .whileTrue(SuperstructureCommands.intakeFuel(intake, hopper, intakeSim));
-
-    // controller.x().whileTrue(SuperstructureCommands.passFuel(shooter, hopper, driveSim,
-    // intakeSim));
-
-    // controller.y().whileTrue(new AimAtHub(drive, controller));
-
-    // controller
-    //     .rightTrigger()
-    //     .whileTrue(new AimAtHub(drive, controller))
-    //     .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
-    //     .and(() -> drive.aimedAtHub() && shooter.atSetpoint())
-    //     .whileTrue(hopper.runHopperDutyCycleCommand(0.7));
-
-    // if (Constants.currentMode == Mode.SIM) {
-    //   controller
-    //       .rightTrigger()
-    //       .whileTrue(new AimAtHub(drive, controller))
-    //       .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
-    //       .and(drive::aimedAtHub)
-    //       .and(shooter::atSetpoint)
-    //       .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
-    //       .whileTrue(
-    //           Commands.repeatingSequence(
-    //               SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
-    //                   .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
-    //               Commands.waitSeconds(0.08)));
-    // } else {
-    //   controller
-    //       .rightTrigger()
-    //       .whileTrue(new AimAtHub(drive, controller))
-    //       .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
-    //       .and(drive::aimedAtHub)
-    //       .and(shooter::atSetpoint)
-    //       .whileTrue(hopper.runHopperDutyCycleCommand(0.7));
-    // }
+    final Runnable resetGryo =
+        Constants.currentMode == Constants.Mode.SIM
+            ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
+            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
+    controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
 
     controller
         .rightTrigger()
@@ -280,6 +240,16 @@ public class RobotContainer {
             Commands.repeatingSequence(
                 SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim),
                 Commands.waitSeconds(0.08)));
+
+    controller
+        .leftTrigger()
+        .whileTrue(
+            Commands.parallel(
+                shooter.runShooterFixedVelocityCommand(210), hopper.runHopperDutyCycleCommand(0.7)))
+        .and(() -> Constants.currentMode == Constants.Mode.SIM)
+        .whileTrue(
+            Commands.repeatingSequence(
+                SimCommands.visualizePassingFuel(driveSim, intakeSim), Commands.waitSeconds(0.08)));
 
     controller
         .rightBumper()

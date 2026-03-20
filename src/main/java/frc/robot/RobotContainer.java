@@ -194,9 +194,7 @@ public class RobotContainer {
                         Commands.parallel(
                             shooter.runShooterCommand(drive::distanceFromHubFeet),
                             hopper.runHopperDutyCycleCommand(0.7),
-                            Commands.repeatingSequence(
-                                    SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim),
-                                    Commands.waitSeconds(0.08))
+                            SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
                                 .onlyIf(() -> Constants.currentMode == Constants.Mode.SIM)))));
 
     // Set up auto routines
@@ -236,10 +234,7 @@ public class RobotContainer {
         .and(shooter::atSetpoint)
         .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
-        .whileTrue(
-            Commands.repeatingSequence(
-                SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim),
-                Commands.waitSeconds(0.08)));
+        .whileTrue(SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim));
 
     controller
         .leftTrigger()
@@ -247,9 +242,7 @@ public class RobotContainer {
             Commands.parallel(
                 shooter.runShooterFixedVelocityCommand(210), hopper.runHopperDutyCycleCommand(0.7)))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
-        .whileTrue(
-            Commands.repeatingSequence(
-                SimCommands.visualizePassingFuel(driveSim, intakeSim), Commands.waitSeconds(0.08)));
+        .whileTrue(SimCommands.visualizePassingFuel(driveSim, intakeSim));
 
     controller
         .rightBumper()

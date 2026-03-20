@@ -19,19 +19,18 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.drive.Drive;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
 
 public class PhotonVision extends SubsystemBase {
-  private final Drive drive;
+  private final VisionConsumer consumer;
   private final PhotonVisionIO[] io;
   private final PhotonVisionIOInputsAutoLogged[] inputs;
   private final Alert[] disconnectedAlerts;
 
-  public PhotonVision(Drive drive, PhotonVisionIO... io) {
-    this.drive = drive;
+  public PhotonVision(VisionConsumer consumer, PhotonVisionIO... io) {
+    this.consumer = consumer;
     this.io = io;
 
     // Initialize inputs
@@ -131,7 +130,7 @@ public class PhotonVision extends SubsystemBase {
         }
 
         // Send vision observation
-        drive.addVisionMeasurement(
+        consumer.accept(
             observation.pose().toPose2d(),
             observation.timestamp(),
             VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));

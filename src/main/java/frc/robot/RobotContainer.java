@@ -90,12 +90,12 @@ public class RobotContainer {
         hopper = new Hopper(new HopperIOReal());
         photonVision =
             new PhotonVision(
-                drive,
+                drive::addVisionMeasurement,
                 new PhotonVisionIOReal(
                     PhotonVisionConstants.camera0Name, PhotonVisionConstants.robotToCamera0),
                 new PhotonVisionIOReal(
                     PhotonVisionConstants.camera1Name, PhotonVisionConstants.robotToCamera1));
-        questNav = new QuestNav(new QuestNavIOReal(drive));
+        questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIOReal());
         break;
 
       case SIM:
@@ -122,7 +122,7 @@ public class RobotContainer {
                 driveSim::setSimulationWorldPose);
         photonVision =
             new PhotonVision(
-                drive,
+                drive::addVisionMeasurement,
                 new PhotonVisionIOSim(
                     PhotonVisionConstants.camera0Name,
                     PhotonVisionConstants.robotToCamera0,
@@ -134,7 +134,7 @@ public class RobotContainer {
         shooter = new Shooter(new ShooterIOSim() {});
         intake = new Intake(new IntakeIOSim());
         hopper = new Hopper(new HopperIO() {});
-        questNav = new QuestNav(new QuestNavIO() {});
+        questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIO() {});
         break;
 
       default:
@@ -147,11 +147,11 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 (pose) -> {});
-        photonVision = new PhotonVision(drive, new PhotonVisionIO() {});
+        photonVision = new PhotonVision(drive::addVisionMeasurement, new PhotonVisionIO() {});
         shooter = new Shooter(new ShooterIO() {});
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIO() {});
-        questNav = new QuestNav(new QuestNavIO() {});
+        questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIO() {});
         break;
     }
 

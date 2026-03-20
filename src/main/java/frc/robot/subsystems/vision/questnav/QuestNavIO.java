@@ -13,7 +13,7 @@ public interface QuestNavIO {
     public int batteryPercent = 0;
 
     public Pose3d[] questPoses = new Pose3d[0];
-    public Pose2d[] calculatedRobotPoses = new Pose2d[0];
+    public double[] timestamps = new double[0];
   }
 
   public default void updateInputs(QuestNavIOInputs inputs) {}

@@ -307,6 +307,11 @@ public class RobotContainer {
   }
 
   public void updateElastic() {
+    if (Constants.currentMode == Constants.Mode.SIM) {
+      SmartDashboard.putNumber(
+          "(SIM) Points Scored",
+          SimulatedArena.getInstance().getScore(DriverStation.getAlliance().orElse(Alliance.Blue)));
+    }
     SmartDashboard.putBoolean("Hub Active", HubShiftUtil.isHubActive());
     SmartDashboard.putBoolean("Shoot Override", shootOverride);
     SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());

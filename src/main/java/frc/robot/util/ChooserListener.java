@@ -36,7 +36,10 @@ public class ChooserListener implements Consumer<Command> {
     try {
       List<PathPlannerPath> pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(selectedPath);
       PathPlannerPath startingPath = pathsInAuto.get(0);
-      Pose2d startingPose = startingPath.getStartingDifferentialPose();
+      Pose2d startingPose =
+          startingPath
+              .getStartingHolonomicPose()
+              .orElse(startingPath.getStartingDifferentialPose());
 
       boolean isFlipped = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
 

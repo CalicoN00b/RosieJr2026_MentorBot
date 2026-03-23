@@ -99,7 +99,7 @@ public class RobotContainer {
                     PhotonVisionConstants.camera0Name, PhotonVisionConstants.robotToCamera0),
                 new PhotonVisionIOReal(
                     PhotonVisionConstants.camera1Name, PhotonVisionConstants.robotToCamera1));
-        questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIOReal());
+        questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIOReal(drive::getPose));
         break;
 
       case SIM:

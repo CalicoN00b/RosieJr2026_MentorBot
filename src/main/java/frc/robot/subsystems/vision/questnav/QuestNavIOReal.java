@@ -6,13 +6,18 @@ import gg.questnav.questnav.PoseFrame;
 import gg.questnav.questnav.QuestNav;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class QuestNavIOReal implements QuestNavIO {
 
   private final QuestNav questNav;
+  private final Supplier<Pose2d> drivePoseSupplier;
 
-  public QuestNavIOReal() {
+  public QuestNavIOReal(Supplier<Pose2d> drivePoseSupplier) {
     questNav = new QuestNav();
+    this.drivePoseSupplier = drivePoseSupplier;
+
+    questNav.onConnected(() -> setPose(this.drivePoseSupplier.get()));
   }
 
   @Override

@@ -16,11 +16,11 @@ public class Flywheel extends SubsystemBase {
   private final FlywheelIO io;
   private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
 
-  @AutoLogOutput(key = "Shooter/Setpoint")
+  @AutoLogOutput(key = "Flywheel/Setpoint")
   private double setpoint = 0;
 
   private final Alert shooterDisconnectedAlert =
-      new Alert("Shooter disconnected!", AlertType.kError);
+      new Alert("Flywheel motor disconnected!", AlertType.kError);
 
   public Flywheel(FlywheelIO io) {
     this.io = io;
@@ -29,7 +29,7 @@ public class Flywheel extends SubsystemBase {
   @Override
   public void periodic() {
     io.updateInputs(inputs);
-    Logger.processInputs("Shooter", inputs);
+    Logger.processInputs("Flywheel", inputs);
 
     shooterDisconnectedAlert.set(!inputs.connected && Constants.currentMode != Mode.SIM);
   }
@@ -48,7 +48,7 @@ public class Flywheel extends SubsystemBase {
     io.setShooterNeutral();
   }
 
-  @AutoLogOutput(key = "Shooter/AtSetpoint")
+  @AutoLogOutput(key = "Flywheel/AtSetpoint")
   public boolean atSetpoint() {
     if (setpoint == 0) return true;
 
@@ -58,7 +58,7 @@ public class Flywheel extends SubsystemBase {
     return lowerLimit <= inputs.velocityRadPerSec && inputs.velocityRadPerSec <= upperLimit;
   }
 
-  @AutoLogOutput(key = "Shooter/CalculatedVelocity")
+  @AutoLogOutput(key = "Flywheel/CalculatedVelocity")
   public double calculateShooterVelocity(double distanceToHub) {
     return (21 + 15 * (distanceToHub - 4.1) / 13.2)
         * 1.047; // * 5.75 * 2. May also need rotationsToRadians
@@ -75,9 +75,7 @@ public class Flywheel extends SubsystemBase {
   public Command runTrackingCommand(DoubleSupplier distanceToHub) {
     return Commands.runEnd(
         () -> {
-          DoubleSupplier calculatedVelocity =
-              () -> calculateShooterVelocity(distanceToHub.getAsDouble());
-          setVelocity(calculatedVelocity.getAsDouble());
+          setVelocity(calculateShooterVelocity(distanceToHub.getAsDouble()));
         },
         this::setNeutral,
         this);

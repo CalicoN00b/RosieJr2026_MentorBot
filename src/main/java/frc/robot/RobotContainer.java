@@ -209,7 +209,8 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    autoChooser.onChange(new ChooserListener(autoChooser, drive, questNav));
+    autoChooser.onChange(
+        new ChooserListener(autoChooser.getSendableChooser()::getSelected, drive, questNav));
 
     // Configure the button bindings
     configureButtonBindings();

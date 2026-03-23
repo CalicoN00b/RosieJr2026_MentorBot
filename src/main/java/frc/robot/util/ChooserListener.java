@@ -12,17 +12,16 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.questnav.QuestNav;
 import java.util.List;
 import java.util.function.Consumer;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import java.util.function.Supplier;
 
 public class ChooserListener implements Consumer<Command> {
 
-  private final LoggedDashboardChooser<Command> autoChooser;
+  private final Supplier<String> selectedSupplier;
   private final Drive drive;
   private final QuestNav questNav;
 
-  public ChooserListener(
-      LoggedDashboardChooser<Command> autoChooser, Drive drive, QuestNav questNav) {
-    this.autoChooser = autoChooser;
+  public ChooserListener(Supplier<String> selectedSupplier, Drive drive, QuestNav questNav) {
+    this.selectedSupplier = selectedSupplier;
     this.drive = drive;
     this.questNav = questNav;
   }
@@ -30,11 +29,9 @@ public class ChooserListener implements Consumer<Command> {
   @Override
   public void accept(Command t) {
     // We will now proceed to ignore the command that we're supposed to be accepting
-
-    String selectedPath = autoChooser.getSendableChooser().getSelected();
-
     try {
-      List<PathPlannerPath> pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(selectedPath);
+      List<PathPlannerPath> pathsInAuto =
+          PathPlannerAuto.getPathGroupFromAutoFile(selectedSupplier.get());
       PathPlannerPath startingPath = pathsInAuto.get(0);
       Pose2d startingPose =
           startingPath

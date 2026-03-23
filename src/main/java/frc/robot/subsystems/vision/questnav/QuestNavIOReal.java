@@ -17,7 +17,7 @@ public class QuestNavIOReal implements QuestNavIO {
     questNav = new QuestNav();
     this.drivePoseSupplier = drivePoseSupplier;
 
-    questNav.onConnected(() -> setPose(this.drivePoseSupplier.get()));
+    questNav.onCommandFailure((response) -> setPose(this.drivePoseSupplier.get()));
   }
 
   @Override

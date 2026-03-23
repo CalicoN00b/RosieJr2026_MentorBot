@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.shooter.flywheel;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -13,7 +13,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 
-public class ShooterIOReal implements ShooterIO {
+public class FlywheelIOReal implements FlywheelIO {
 
   private final TalonFX shooterMotor;
 
@@ -25,7 +25,7 @@ public class ShooterIOReal implements ShooterIO {
   VelocityVoltage velocityVoltageControl = new VelocityVoltage(null);
   NeutralOut neutralOutControl = new NeutralOut();
 
-  public ShooterIOReal() {
+  public FlywheelIOReal() {
     shooterMotor = new TalonFX(0);
 
     TalonFXConfiguration config = new TalonFXConfiguration();
@@ -42,7 +42,7 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void updateInputs(ShooterIOInputs inputs) {
+  public void updateInputs(FlywheelIOInputs inputs) {
     inputs.connected = shooterMotor.isConnected();
     inputs.appliedVolts = motorVoltage.getValueAsDouble();
     inputs.currentAmps = motorCurrent.getValueAsDouble();

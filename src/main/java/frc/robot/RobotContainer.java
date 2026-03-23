@@ -33,7 +33,10 @@ import frc.robot.commands.SimCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.hopper.*;
 import frc.robot.subsystems.intake.*;
-import frc.robot.subsystems.shooter.*;
+import frc.robot.subsystems.shooter.flywheel.Flywheel;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOReal;
+import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
 import frc.robot.subsystems.vision.photonvision.*;
 import frc.robot.subsystems.vision.questnav.*;
 import frc.robot.util.HubShiftUtil;
@@ -55,7 +58,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
-  private final Shooter shooter;
+  private final Flywheel flywheel;
   private final Intake intake;
   private final Hopper hopper;
   private final PhotonVision photonVision;
@@ -86,7 +89,7 @@ public class RobotContainer {
                 new ModuleIOReal(2),
                 new ModuleIOReal(3),
                 (pose) -> {});
-        shooter = new Shooter(new ShooterIOReal());
+        flywheel = new Flywheel(new FlywheelIOReal());
         intake = new Intake(new IntakeIOReal());
         hopper = new Hopper(new HopperIOReal());
         photonVision =
@@ -132,7 +135,7 @@ public class RobotContainer {
                     PhotonVisionConstants.camera1Name,
                     PhotonVisionConstants.robotToCamera1,
                     driveSim::getSimulatedDriveTrainPose));
-        shooter = new Shooter(new ShooterIOSim() {});
+        flywheel = new Flywheel(new FlywheelIOSim() {});
         intake = new Intake(new IntakeIOSim());
         hopper = new Hopper(new HopperIO() {});
         questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIO() {});
@@ -149,7 +152,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 (pose) -> {});
         photonVision = new PhotonVision(drive::addVisionMeasurement, new PhotonVisionIO() {});
-        shooter = new Shooter(new ShooterIO() {});
+        flywheel = new Flywheel(new FlywheelIO() {});
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIO() {});
         questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIO() {});
@@ -194,11 +197,11 @@ public class RobotContainer {
             "Shoot",
                 Commands.parallel(
                         new AimAtHubAuto(drive),
-                        shooter.runShooterCommand(drive::distanceFromHubFeet))
-                    .onlyWhile(() -> !(drive.aimedAtHub() && shooter.atSetpoint()))
+                        flywheel.runTrackingCommand(drive::distanceFromHubFeet))
+                    .onlyWhile(() -> !(drive.aimedAtHub() && flywheel.atSetpoint()))
                     .andThen(
                         Commands.parallel(
-                            shooter.runShooterCommand(drive::distanceFromHubFeet),
+                            flywheel.runTrackingCommand(drive::distanceFromHubFeet),
                             hopper.runHopperDutyCycleCommand(0.7),
                             SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
                                 .onlyIf(() -> Constants.currentMode == Constants.Mode.SIM)))));
@@ -240,9 +243,9 @@ public class RobotContainer {
         .and(() -> HubShiftUtil.isHubActive())
         .or(() -> shootOverride)
         .whileTrue(new AimAtHub(drive, controller))
-        .whileTrue(shooter.runShooterCommand(drive::distanceFromHubFeet))
+        .whileTrue(flywheel.runTrackingCommand(drive::distanceFromHubFeet))
         .and(drive::aimedAtHub)
-        .and(shooter::atSetpoint)
+        .and(flywheel::atSetpoint)
         .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
         .whileTrue(SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim));
@@ -262,7 +265,7 @@ public class RobotContainer {
         .leftTrigger()
         .whileTrue(
             Commands.parallel(
-                shooter.runShooterFixedVelocityCommand(210), hopper.runHopperDutyCycleCommand(0.7)))
+                flywheel.runFixedVelocityCommand(210), hopper.runHopperDutyCycleCommand(0.7)))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
         .whileTrue(SimCommands.visualizePassingFuel(driveSim, intakeSim));
 

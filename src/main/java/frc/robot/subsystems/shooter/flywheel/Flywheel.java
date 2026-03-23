@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.shooter.flywheel;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -11,10 +11,10 @@ import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-public class Shooter extends SubsystemBase {
+public class Flywheel extends SubsystemBase {
 
-  private final ShooterIO io;
-  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
+  private final FlywheelIO io;
+  private final FlywheelIOInputsAutoLogged inputs = new FlywheelIOInputsAutoLogged();
 
   @AutoLogOutput(key = "Shooter/Setpoint")
   private double setpoint = 0;
@@ -22,7 +22,7 @@ public class Shooter extends SubsystemBase {
   private final Alert shooterDisconnectedAlert =
       new Alert("Shooter disconnected!", AlertType.kError);
 
-  public Shooter(ShooterIO io) {
+  public Flywheel(FlywheelIO io) {
     this.io = io;
   }
 
@@ -64,15 +64,15 @@ public class Shooter extends SubsystemBase {
         * 1.047; // * 5.75 * 2. May also need rotationsToRadians
   }
 
-  public Command runShooterDutyCycleCommand(double speed) {
+  public Command runDutyCycleCommand(double speed) {
     return Commands.runEnd(() -> setDutyCycle(speed), this::setNeutral, this);
   }
 
-  public Command runShooterFixedVelocityCommand(double velocityRadsPerSec) {
+  public Command runFixedVelocityCommand(double velocityRadsPerSec) {
     return Commands.runEnd(() -> setVelocity(velocityRadsPerSec), this::setNeutral, this);
   }
 
-  public Command runShooterCommand(DoubleSupplier distanceToHub) {
+  public Command runTrackingCommand(DoubleSupplier distanceToHub) {
     return Commands.runEnd(
         () -> {
           DoubleSupplier calculatedVelocity =

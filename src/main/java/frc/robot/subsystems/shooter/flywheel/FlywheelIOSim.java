@@ -1,20 +1,20 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.shooter.flywheel;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-public class ShooterIOSim implements ShooterIO {
+public class FlywheelIOSim implements FlywheelIO {
 
   private final DCMotor gearbox = DCMotor.getKrakenX60(1);
   private final DCMotorSim sim;
 
-  public ShooterIOSim() {
+  public FlywheelIOSim() {
     sim = new DCMotorSim(LinearSystemId.createDCMotorSystem(gearbox, 0.0104726201, 0.75), gearbox);
   }
 
   @Override
-  public void updateInputs(ShooterIOInputs inputs) {
+  public void updateInputs(FlywheelIOInputs inputs) {
     sim.update(0.02);
 
     inputs.connected = true;

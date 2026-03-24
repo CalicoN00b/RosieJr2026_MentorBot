@@ -18,7 +18,8 @@ public class SimCommands {
     return Commands.repeatingSequence(
         Commands.runOnce(
                 () -> {
-                  double launchVelocity = 21 + 15 * ((drive.distanceFromHubFeet() - 4.1) / 13.2);
+                  double launchVelocity =
+                      (21 + 15 * ((drive.distanceFromHubFeet() - 4.1) / 13.2)) * 1.047;
 
                   SimulatedArena.getInstance()
                       .addGamePieceProjectile(
@@ -27,6 +28,30 @@ public class SimCommands {
                               new Translation2d(),
                               driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
                               driveSim.getSimulatedDriveTrainPose().getRotation(),
+                              Meters.of(0.1),
+                              FeetPerSecond.of(launchVelocity),
+                              Degrees.of(75)));
+                  intakeSim.obtainGamePieceFromIntake();
+                })
+            .onlyIf(() -> intakeSim.getGamePiecesAmount() > 0),
+        Commands.waitSeconds(0.08));
+  }
+
+  public static Command visualizeScoringFuelTurret(
+      Drive drive, SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
+    return Commands.repeatingSequence(
+        Commands.runOnce(
+                () -> {
+                  double launchVelocity =
+                      (21 + 15 * ((drive.distanceFromHubFeet() - 4.1) / 13.2)) * 1.047;
+
+                  SimulatedArena.getInstance()
+                      .addGamePieceProjectile(
+                          new RebuiltFuelOnFly(
+                              driveSim.getSimulatedDriveTrainPose().getTranslation(),
+                              new Translation2d(),
+                              driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                              drive.angleToHub(),
                               Meters.of(0.1),
                               FeetPerSecond.of(launchVelocity),
                               Degrees.of(75)));

@@ -322,4 +322,16 @@ public class Drive extends SubsystemBase {
 
     return Units.metersToFeet(currentToHubDistance);
   }
+
+  @AutoLogOutput(key = "Drive/AngleToHub")
+  public Rotation2d angleToHub() {
+    boolean isFlipped = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    Pose2d currentPose = getPose();
+    Translation2d hubCenter = FieldConstants.hubCenter;
+    if (isFlipped) {
+      hubCenter = hubCenter.rotateAround(FieldConstants.fieldCenter, Rotation2d.k180deg);
+    }
+
+    return hubCenter.minus(currentPose.getTranslation()).getAngle();
+  }
 }

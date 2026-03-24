@@ -49,7 +49,7 @@ public class ChooserListener implements Consumer<Command> {
               ? startingPose.rotateAround(FieldConstants.fieldCenter, Rotation2d.k180deg)
               : startingPose);
     } catch (Exception e) {
-      System.out.println("Failed to load selected auto path");
+      DriverStation.reportWarning("Could not load auto path: " + selectedSupplier.get(), false);
     }
   }
 }

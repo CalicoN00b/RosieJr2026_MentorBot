@@ -265,7 +265,7 @@ public class RobotContainer {
         .and(flywheel::atSetpoint)
         .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
-        .whileTrue(SimCommands.visualizeScoringFuelTurret(drive, driveSim, intakeSim));
+        .whileTrue(SimCommands.visualizeScoringFuelTurretSOTF(drive, driveSim, intakeSim));
 
     controller
         .rightTrigger()

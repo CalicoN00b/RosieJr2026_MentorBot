@@ -17,6 +17,7 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -233,12 +234,25 @@ public class RobotContainer {
             () -> -controller.getLeftX(),
             () -> -controller.getRightX()));
 
-    // // Reset gyro to 0° when start button is pressed
-    final Runnable resetGryo =
-        Constants.currentMode == Constants.Mode.SIM
-            ? () -> drive.setPose(driveSim.getSimulatedDriveTrainPose())
-            : () -> drive.setPose(new Pose2d(drive.getPose().getTranslation(), Rotation2d.kZero));
-    controller.start().onTrue(Commands.runOnce(resetGryo, drive).ignoringDisable(true));
+    // Reset the robot to face forward (front of the robot facing away from alliance wall) when
+    // presed
+    controller
+        .start()
+        .onTrue(
+            Commands.runOnce(
+                    () -> {
+                      Translation2d driveTranslation = drive.getPose().getTranslation();
+                      boolean isFlipped =
+                          DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+                      Pose2d poseAfterReset =
+                          new Pose2d(
+                              driveTranslation, isFlipped ? Rotation2d.k180deg : Rotation2d.kZero);
+                      drive.setPose(poseAfterReset);
+                      questNav.setPose(poseAfterReset);
+                    },
+                    drive,
+                    questNav)
+                .ignoringDisable(true));
 
     // Sequence for shooting at the hub.
     // Auto aims and warms up the shooter

@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 7.7535587188612105,
-        "y": 4.43846975088968
+        "x": 7.59,
+        "y": 4.438
       },
       "prevControl": null,
       "nextControl": {
-        "x": 7.046451937674663,
-        "y": 5.145576532076228
+        "x": 6.882893218813452,
+        "y": 5.145106781186548
       },
       "isLocked": false,
       "linkedName": "DepotTrenchNeutralZone"
@@ -54,9 +54,9 @@
   "pointTowardsZones": [],
   "eventMarkers": [],
   "globalConstraints": {
-    "maxVelocity": 4.8,
-    "maxAcceleration": 5.0,
-    "maxAngularVelocity": 1000.0,
+    "maxVelocity": 5.7,
+    "maxAcceleration": 15.0,
+    "maxAngularVelocity": 750.0,
     "maxAngularAcceleration": 1500.0,
     "nominalVoltage": 12.0,
     "unlimited": false

@@ -36,31 +36,29 @@ public class SOTMCalculations {
   }
 
   /**
-   * Uses the Secant Method to adjust a pose given field speeds, current position, and a goal
-   * postiion
+   * Uses the Secant Method to adjust a target translation given
+   * field relative velocities, the current translation, and a goal translation
    *
    * @param fieldRelativeSpeeds - The field relative speeds of the turret
-   * @param currentPose - The current pose of the turret
-   * @param targetPose - The pose to aim for
-   * @return the adjusted target pose.
+   * @param currentPose - The current translation of the turret
+   * @param targetPose - The translation to aim for
+   * @return the adjusted target translation.
    */
-  public static Pose2d getSecantMethodAdjustedPose(
-      ChassisSpeeds fieldRelativeSpeeds, Pose2d currentPose, Pose2d targetPose) {
+  public static Translation2d getSecantMethodAdjustedPoseTranslation(
+      ChassisSpeeds fieldRelativeSpeeds, Translation2d currentPoseTranslation, Translation2d targetPoseTranslation) {
     // Initial measurements (before projecitng into the future)
     double t0 = 0;
-    Pose2d p0 = currentPose;
+    Translation2d p0 = currentPoseTranslation;
 
     // TODO: create flight time table using measurements from testing
     // t1 and p1 will be used to project into the future (aka how far will the robot have gone by
     // the time t1 has passed)
-    double t1 = flightTimeMap.get(p0.minus(currentPose).getTranslation().getNorm());
-    Pose2d p1 =
-        p0.transformBy(
-            new Transform2d(
+    double t1 = flightTimeMap.get(p0.minus(currentPoseTranslation).getNorm());
+    Translation2d p1 =
+        p0.plus(
                 new Translation2d(
                     -fieldRelativeSpeeds.vxMetersPerSecond * t1,
-                    -fieldRelativeSpeeds.vyMetersPerSecond * t1),
-                new Rotation2d()));
+                    -fieldRelativeSpeeds.vyMetersPerSecond * t1));
 
     // Now we will repeat the projecting into the future, getting closer and closer to the "perfect"
     // answer, and we will return an acceptable answer
@@ -68,8 +66,8 @@ public class SOTMCalculations {
       if (Math.abs(t1 - t0) < 1e-5) break;
 
       // Really gotta get that flight time table
-      double ft0 = flightTimeMap.get(p0.minus(currentPose).getTranslation().getNorm());
-      double ft1 = flightTimeMap.get(p1.minus(currentPose).getTranslation().getNorm());
+      double ft0 = flightTimeMap.get(p0.minus(currentPoseTranslation).getNorm());
+      double ft1 = flightTimeMap.get(p1.minus(currentPoseTranslation).getNorm());
       double newTOF = (t0 * (ft1 - t1) - t1 * (ft0 - t0)) / (ft1 - t1 - ft0 + t0);
 
       t0 = t1;
@@ -77,12 +75,10 @@ public class SOTMCalculations {
 
       p0 = p1;
       p1 =
-          targetPose.transformBy(
-              new Transform2d(
+          targetPoseTranslation.plus(
                   new Translation2d(
                       -fieldRelativeSpeeds.vxMetersPerSecond * newTOF,
-                      -fieldRelativeSpeeds.vyMetersPerSecond * newTOF),
-                  new Rotation2d()));
+                      -fieldRelativeSpeeds.vyMetersPerSecond * newTOF));
     }
 
     return p1;

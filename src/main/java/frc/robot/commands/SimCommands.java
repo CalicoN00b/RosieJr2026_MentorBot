@@ -70,8 +70,7 @@ public class SimCommands {
         Commands.waitSeconds(0.08));
   }
 
-  public static Command visualizeScoringFuelTurretSOTF(
-      Drive drive, SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
+  public static Command visualizeScoringFuelTurretSOTF(SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
     return Commands.repeatingSequence(
         Commands.runOnce(
                 () -> {
@@ -83,38 +82,36 @@ public class SimCommands {
                               FieldConstants.fieldCenter, Rotation2d.k180deg)
                           : FieldConstants.hubCenter;
 
-                  Pose2d currentPose = drive.getPose();
-                  ChassisSpeeds fieldSpeeds = drive.getFieldRelativeChassisSpeeds();
+                  Translation2d currentPoseTranslation = driveSim.getSimulatedDriveTrainPose().getTranslation();
+                  ChassisSpeeds fieldSpeeds = driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative();
 
-                  Pose2d adjustedTargetPose =
-                      SOTMCalculations.getSecantMethodAdjustedPose(
-                          fieldSpeeds, currentPose, new Pose2d(hubCenter, Rotation2d.kZero));
+                  Translation2d adjustedTargetPose =
+                      SOTMCalculations.getSecantMethodAdjustedPoseTranslation(
+                          fieldSpeeds, currentPoseTranslation, hubCenter);
 
                   double distToAdjustedPose =
                       Units.metersToFeet(
-                          currentPose
-                              .getTranslation()
-                              .getDistance(adjustedTargetPose.getTranslation()));
+                          currentPoseTranslation
+                              .getDistance(adjustedTargetPose));
                   Rotation2d angleToAdjustedPose =
                       adjustedTargetPose
-                          .getTranslation()
-                          .minus(currentPose.getTranslation())
+                          .minus(currentPoseTranslation)
                           .getAngle();
 
                   double launchVelocity = (21 + 15 * ((distToAdjustedPose - 4.1) / 13.2)) * 1.047;
 
-                  Logger.recordOutput("SOTM/AdjustedTargetPose", adjustedTargetPose);
-                  Logger.recordOutput("SOTM/DistToAdjustedPoseFeet", distToAdjustedPose);
-                  Logger.recordOutput(
-                      "SOTM/AngleToAdjustedPoseDegrees", angleToAdjustedPose.getDegrees());
-                  Logger.recordOutput("SOTM/LaunchVelocityFeetPerSec", launchVelocity);
+                //   Logger.recordOutput("SOTM/AdjustedTargetPose", adjustedTargetPose);
+                //   Logger.recordOutput("SOTM/DistToAdjustedPoseFeet", distToAdjustedPose);
+                //   Logger.recordOutput(
+                //       "SOTM/AngleToAdjustedPoseDegrees", angleToAdjustedPose.getDegrees());
+                //   Logger.recordOutput("SOTM/LaunchVelocityFeetPerSec", launchVelocity);
 
                   SimulatedArena.getInstance()
                       .addGamePieceProjectile(
                           new RebuiltFuelOnFly(
-                              driveSim.getSimulatedDriveTrainPose().getTranslation(),
+                              currentPoseTranslation,
                               new Translation2d(),
-                              driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                              fieldSpeeds,
                               angleToAdjustedPose,
                               Meters.of(0.1),
                               FeetPerSecond.of(launchVelocity),

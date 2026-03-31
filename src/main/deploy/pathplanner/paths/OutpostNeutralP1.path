@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.437181846217105,
-        "y": 7.429340691817434
+        "x": 4.4372,
+        "y": 0.64
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.437181846217105,
-        "y": 7.429340691817434
+        "x": 5.4372,
+        "y": 0.64
       },
       "isLocked": false,
-      "linkedName": "DepotNeutralStart"
+      "linkedName": "OutpostNeutralStart"
     },
     {
       "anchor": {
         "x": 7.23,
-        "y": 7.188108595463267
+        "y": 0.8810000000000011
       },
       "prevControl": {
-        "x": 6.713147283185993,
-        "y": 7.398762592186711
+        "x": 6.71326859291217,
+        "y": 0.6703993045381124
       },
       "nextControl": {
-        "x": 7.746852716814008,
-        "y": 6.977454598739823
+        "x": 7.746731407087831,
+        "y": 1.0916006954618895
       },
       "isLocked": false,
       "linkedName": null
@@ -33,21 +33,21 @@
     {
       "anchor": {
         "x": 7.59,
-        "y": 4.438
+        "y": 3.631000000000001
       },
       "prevControl": {
         "x": 7.59,
-        "y": 5.376842346879206
+        "y": 2.692000000000001
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotNeutralCheckpoint1"
+      "linkedName": "OutpostNeutralCheckpoint1"
     }
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 1.3123110640870626,
-      "rotationDegrees": -75.0
+      "waypointRelativePos": 1.31,
+      "rotationDegrees": 75.0
     }
   ],
   "constraintZones": [],
@@ -55,7 +55,7 @@
   "eventMarkers": [
     {
       "name": "IntakeAtNeutralZone",
-      "waypointRelativePos": 0.9818468823993677,
+      "waypointRelativePos": 0.98,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -75,7 +75,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -75.0
+    "rotation": 75.0
   },
   "reversed": false,
   "folder": null,

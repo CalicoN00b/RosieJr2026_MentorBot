@@ -1,8 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingTreeMap;
 import edu.wpi.first.math.interpolation.Interpolator;
@@ -36,8 +33,8 @@ public class SOTMCalculations {
   }
 
   /**
-   * Uses the Secant Method to adjust a target translation given
-   * field relative velocities, the current translation, and a goal translation
+   * Uses the Secant Method to adjust a target translation given field relative velocities, the
+   * current translation, and a goal translation
    *
    * @param fieldRelativeSpeeds - The field relative speeds of the turret
    * @param currentPose - The current translation of the turret
@@ -45,7 +42,9 @@ public class SOTMCalculations {
    * @return the adjusted target translation.
    */
   public static Translation2d getSecantMethodAdjustedPoseTranslation(
-      ChassisSpeeds fieldRelativeSpeeds, Translation2d currentPoseTranslation, Translation2d targetPoseTranslation) {
+      ChassisSpeeds fieldRelativeSpeeds,
+      Translation2d currentPoseTranslation,
+      Translation2d targetPoseTranslation) {
     // Initial measurements (before projecitng into the future)
     double t0 = 0;
     Translation2d p0 = currentPoseTranslation;
@@ -56,9 +55,9 @@ public class SOTMCalculations {
     double t1 = flightTimeMap.get(p0.minus(currentPoseTranslation).getNorm());
     Translation2d p1 =
         p0.plus(
-                new Translation2d(
-                    -fieldRelativeSpeeds.vxMetersPerSecond * t1,
-                    -fieldRelativeSpeeds.vyMetersPerSecond * t1));
+            new Translation2d(
+                -fieldRelativeSpeeds.vxMetersPerSecond * t1,
+                -fieldRelativeSpeeds.vyMetersPerSecond * t1));
 
     // Now we will repeat the projecting into the future, getting closer and closer to the "perfect"
     // answer, and we will return an acceptable answer
@@ -76,9 +75,9 @@ public class SOTMCalculations {
       p0 = p1;
       p1 =
           targetPoseTranslation.plus(
-                  new Translation2d(
-                      -fieldRelativeSpeeds.vxMetersPerSecond * newTOF,
-                      -fieldRelativeSpeeds.vyMetersPerSecond * newTOF));
+              new Translation2d(
+                  -fieldRelativeSpeeds.vxMetersPerSecond * newTOF,
+                  -fieldRelativeSpeeds.vyMetersPerSecond * newTOF));
     }
 
     return p1;

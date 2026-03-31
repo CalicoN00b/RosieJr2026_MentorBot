@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -18,7 +17,6 @@ import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
-import org.littletonrobotics.junction.Logger;
 
 public class SimCommands {
 
@@ -70,7 +68,8 @@ public class SimCommands {
         Commands.waitSeconds(0.08));
   }
 
-  public static Command visualizeScoringFuelTurretSOTF(SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
+  public static Command visualizeScoringFuelTurretSOTF(
+      SwerveDriveSimulation driveSim, IntakeSimulation intakeSim) {
     return Commands.repeatingSequence(
         Commands.runOnce(
                 () -> {
@@ -82,29 +81,27 @@ public class SimCommands {
                               FieldConstants.fieldCenter, Rotation2d.k180deg)
                           : FieldConstants.hubCenter;
 
-                  Translation2d currentPoseTranslation = driveSim.getSimulatedDriveTrainPose().getTranslation();
-                  ChassisSpeeds fieldSpeeds = driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative();
+                  Translation2d currentPoseTranslation =
+                      driveSim.getSimulatedDriveTrainPose().getTranslation();
+                  ChassisSpeeds fieldSpeeds =
+                      driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative();
 
                   Translation2d adjustedTargetPose =
                       SOTMCalculations.getSecantMethodAdjustedPoseTranslation(
                           fieldSpeeds, currentPoseTranslation, hubCenter);
 
                   double distToAdjustedPose =
-                      Units.metersToFeet(
-                          currentPoseTranslation
-                              .getDistance(adjustedTargetPose));
+                      Units.metersToFeet(currentPoseTranslation.getDistance(adjustedTargetPose));
                   Rotation2d angleToAdjustedPose =
-                      adjustedTargetPose
-                          .minus(currentPoseTranslation)
-                          .getAngle();
+                      adjustedTargetPose.minus(currentPoseTranslation).getAngle();
 
                   double launchVelocity = (21 + 15 * ((distToAdjustedPose - 4.1) / 13.2)) * 1.047;
 
-                //   Logger.recordOutput("SOTM/AdjustedTargetPose", adjustedTargetPose);
-                //   Logger.recordOutput("SOTM/DistToAdjustedPoseFeet", distToAdjustedPose);
-                //   Logger.recordOutput(
-                //       "SOTM/AngleToAdjustedPoseDegrees", angleToAdjustedPose.getDegrees());
-                //   Logger.recordOutput("SOTM/LaunchVelocityFeetPerSec", launchVelocity);
+                  //   Logger.recordOutput("SOTM/AdjustedTargetPose", adjustedTargetPose);
+                  //   Logger.recordOutput("SOTM/DistToAdjustedPoseFeet", distToAdjustedPose);
+                  //   Logger.recordOutput(
+                  //       "SOTM/AngleToAdjustedPoseDegrees", angleToAdjustedPose.getDegrees());
+                  //   Logger.recordOutput("SOTM/LaunchVelocityFeetPerSec", launchVelocity);
 
                   SimulatedArena.getInstance()
                       .addGamePieceProjectile(

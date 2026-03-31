@@ -44,6 +44,7 @@ import frc.robot.util.ChooserListener;
 import frc.robot.util.HubShiftUtil;
 import frc.robot.util.LocalADStarAK;
 import java.util.Map;
+import java.util.function.DoubleSupplier;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.IntakeSimulation.IntakeSide;
 import org.ironmaple.simulation.SimulatedArena;
@@ -170,7 +171,7 @@ public class RobotContainer {
           drive.setPose(pose);
           questNav.setPose(pose);
         },
-        drive::getChassisSpeeds,
+        drive::getRobotRelativeChassisSpeeds,
         drive::runVelocity,
         new PPHolonomicDriveController(
             new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
@@ -227,12 +228,10 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
     // Default command, normal field-relative drive
-    drive.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drive,
-            () -> -controller.getLeftY(),
-            () -> -controller.getLeftX(),
-            () -> -controller.getRightX()));
+    DoubleSupplier driveX = () -> -controller.getLeftX();
+    DoubleSupplier driveY = () -> -controller.getLeftY();
+    DoubleSupplier driveOmega = () -> -controller.getRightX();
+    drive.setDefaultCommand(DriveCommands.joystickDrive(drive, driveY, driveX, driveOmega));
 
     // Reset the robot to face forward (front of the robot facing away from alliance wall) when
     // presed
@@ -276,6 +275,7 @@ public class RobotContainer {
         .and(() -> HubShiftUtil.isHubActive())
         .or(() -> shootOverride)
         .whileTrue(flywheel.runTrackingCommand(drive::distanceFromHubFeet))
+        .whileTrue(DriveCommands.joystickDriveSOTM(drive, driveY, driveX, driveOmega))
         .and(flywheel::atSetpoint)
         .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)

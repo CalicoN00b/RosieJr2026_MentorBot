@@ -237,8 +237,12 @@ public class Drive extends SubsystemBase {
 
   /** Returns the measured chassis speeds of the robot. */
   @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-  public ChassisSpeeds getChassisSpeeds() {
+  public ChassisSpeeds getRobotRelativeChassisSpeeds() {
     return kinematics.toChassisSpeeds(getModuleStates());
+  }
+
+  public ChassisSpeeds getFieldRelativeChassisSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotRelativeChassisSpeeds(), getRotation());
   }
 
   /** Returns the position of each module in radians. */
@@ -309,7 +313,7 @@ public class Drive extends SubsystemBase {
     return Math.abs(currentPose.getRotation().getDegrees() - currentToHubAngle.getDegrees()) < 1;
   }
 
-  @AutoLogOutput(key = "Drive/DistanceFromHub")
+  @AutoLogOutput(key = "Drive/DistanceFromHubFeet")
   public double distanceFromHubFeet() {
     boolean isFlipped = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
     Pose2d currentPose = getPose();
@@ -321,6 +325,20 @@ public class Drive extends SubsystemBase {
     double currentToHubDistance = currentPose.getTranslation().getDistance(hubCenter);
 
     return Units.metersToFeet(currentToHubDistance);
+  }
+
+  @AutoLogOutput(key = "Drive/DistanceFromHubMeters")
+  public double distanceFromHubMeters() {
+    boolean isFlipped = DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    Pose2d currentPose = getPose();
+    Translation2d hubCenter = FieldConstants.hubCenter;
+    if (isFlipped) {
+      hubCenter = hubCenter.rotateAround(FieldConstants.fieldCenter, Rotation2d.k180deg);
+    }
+
+    double currentToHubDistance = currentPose.getTranslation().getDistance(hubCenter);
+
+    return currentToHubDistance;
   }
 
   @AutoLogOutput(key = "Drive/AngleToHub")

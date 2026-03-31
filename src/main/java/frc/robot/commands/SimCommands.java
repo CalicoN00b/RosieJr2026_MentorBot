@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.*;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -12,10 +13,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.FieldConstants;
 import frc.robot.subsystems.drive.*;
+import frc.robot.subsystems.shooter.SOTMCalculations;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
+import org.littletonrobotics.junction.Logger;
 
 public class SimCommands {
 
@@ -79,23 +82,32 @@ public class SimCommands {
                           ? FieldConstants.hubCenter.rotateAround(
                               FieldConstants.fieldCenter, Rotation2d.k180deg)
                           : FieldConstants.hubCenter;
-                  Translation2d targetPose = hubCenter.minus(drive.getPose().getTranslation());
-                  double distance = targetPose.getNorm();
 
-                  double launchVelocity =
-                      (21 + 15 * ((Units.metersToFeet(distance) - 4.1) / 13.2)) * 1.047;
-                  Translation2d targetVector =
-                      targetPose.div(distance).times(Units.feetToMeters(launchVelocity));
+                  Pose2d currentPose = drive.getPose();
+                  ChassisSpeeds fieldSpeeds = drive.getFieldRelativeChassisSpeeds();
 
-                  ChassisSpeeds fieldRelativeSpeeds =
-                      ChassisSpeeds.fromRobotRelativeSpeeds(
-                          drive.getChassisSpeeds(), drive.getRotation());
-                  Translation2d robotVelocity =
-                      new Translation2d(
-                          fieldRelativeSpeeds.vxMetersPerSecond,
-                          fieldRelativeSpeeds.vyMetersPerSecond);
+                  Pose2d adjustedTargetPose =
+                      SOTMCalculations.getSecantMethodAdjustedPose(
+                          fieldSpeeds, currentPose, new Pose2d(hubCenter, Rotation2d.kZero));
 
-                  Translation2d shotVector = targetVector.minus(robotVelocity);
+                  double distToAdjustedPose =
+                      Units.metersToFeet(
+                          currentPose
+                              .getTranslation()
+                              .getDistance(adjustedTargetPose.getTranslation()));
+                  Rotation2d angleToAdjustedPose =
+                      adjustedTargetPose
+                          .getTranslation()
+                          .minus(currentPose.getTranslation())
+                          .getAngle();
+
+                  double launchVelocity = (21 + 15 * ((distToAdjustedPose - 4.1) / 13.2)) * 1.047;
+
+                  Logger.recordOutput("SOTM/AdjustedTargetPose", adjustedTargetPose);
+                  Logger.recordOutput("SOTM/DistToAdjustedPoseFeet", distToAdjustedPose);
+                  Logger.recordOutput(
+                      "SOTM/AngleToAdjustedPoseDegrees", angleToAdjustedPose.getDegrees());
+                  Logger.recordOutput("SOTM/LaunchVelocityFeetPerSec", launchVelocity);
 
                   SimulatedArena.getInstance()
                       .addGamePieceProjectile(
@@ -103,9 +115,9 @@ public class SimCommands {
                               driveSim.getSimulatedDriveTrainPose().getTranslation(),
                               new Translation2d(),
                               driveSim.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                              shotVector.getAngle(),
+                              angleToAdjustedPose,
                               Meters.of(0.1),
-                              MetersPerSecond.of(shotVector.getNorm()),
+                              FeetPerSecond.of(launchVelocity),
                               Degrees.of(75)));
                   intakeSim.obtainGamePieceFromIntake();
                 })

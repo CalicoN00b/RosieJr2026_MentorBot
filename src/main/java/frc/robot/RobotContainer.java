@@ -34,10 +34,9 @@ import frc.robot.commands.SimCommands;
 import frc.robot.subsystems.drive.*;
 import frc.robot.subsystems.hopper.*;
 import frc.robot.subsystems.intake.*;
-import frc.robot.subsystems.shooter.flywheel.Flywheel;
-import frc.robot.subsystems.shooter.flywheel.FlywheelIO;
-import frc.robot.subsystems.shooter.flywheel.FlywheelIOReal;
-import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
+import frc.robot.subsystems.shooter.ShooterSuperstructure;
+import frc.robot.subsystems.shooter.flywheel.*;
+import frc.robot.subsystems.shooter.turret.*;
 import frc.robot.subsystems.vision.photonvision.*;
 import frc.robot.subsystems.vision.questnav.*;
 import frc.robot.util.ChooserListener;
@@ -62,10 +61,13 @@ public class RobotContainer {
   // Subsystems
   private final Drive drive;
   private final Flywheel flywheel;
+  private final Turret turret;
   private final Intake intake;
   private final Hopper hopper;
   private final PhotonVision photonVision;
   private final QuestNav questNav;
+
+  private final ShooterSuperstructure shooterSuperstructure;
 
   private SwerveDriveSimulation driveSim = null;
   private IntakeSimulation intakeSim = null;
@@ -77,7 +79,7 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   // Overrides
-  private boolean shootOverride = false; // If true, allows you to auto shoot when hub is inactive.]
+  private boolean shootOverride = false; // If true, allows you to auto shoot when hub is inactive.
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -93,6 +95,7 @@ public class RobotContainer {
                 new ModuleIOReal(3),
                 (pose) -> {});
         flywheel = new Flywheel(new FlywheelIOReal());
+        turret = new Turret(new TurretIOReal());
         intake = new Intake(new IntakeIOReal());
         hopper = new Hopper(new HopperIOReal());
         photonVision =
@@ -103,6 +106,7 @@ public class RobotContainer {
                 new PhotonVisionIOReal(
                     PhotonVisionConstants.camera1Name, PhotonVisionConstants.robotToCamera1));
         questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIOReal(drive::getPose));
+        shooterSuperstructure = new ShooterSuperstructure(flywheel, turret, drive::getPose, drive::getFieldRelativeChassisSpeeds);
         break;
 
       case SIM:
@@ -139,9 +143,11 @@ public class RobotContainer {
                     PhotonVisionConstants.robotToCamera1,
                     driveSim::getSimulatedDriveTrainPose));
         flywheel = new Flywheel(new FlywheelIOSim() {});
+        turret = new Turret(new TurretIO() {});
         intake = new Intake(new IntakeIOSim());
         hopper = new Hopper(new HopperIO() {});
         questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIO() {});
+        shooterSuperstructure = new ShooterSuperstructure(flywheel, turret, driveSim::getSimulatedDriveTrainPose, driveSim::getDriveTrainSimulatedChassisSpeedsFieldRelative);
         break;
 
       default:
@@ -156,9 +162,11 @@ public class RobotContainer {
                 (pose) -> {});
         photonVision = new PhotonVision(drive::addVisionMeasurement, new PhotonVisionIO() {});
         flywheel = new Flywheel(new FlywheelIO() {});
+        turret = new Turret(new TurretIO() {});
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIO() {});
         questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIO() {});
+        shooterSuperstructure = new ShooterSuperstructure(flywheel, turret, drive::getPose, drive::getFieldRelativeChassisSpeeds);
         break;
     }
 
@@ -199,12 +207,11 @@ public class RobotContainer {
                             .onlyIf(() -> Constants.currentMode == Constants.Mode.SIM)),
             "Shoot",
                 Commands.parallel(
-                        new AimAtHubAuto(drive),
-                        flywheel.runTrackingCommand(drive::distanceFromHubFeet))
-                    .onlyWhile(() -> !(drive.aimedAtHub() && flywheel.atSetpoint()))
+                        shooterSuperstructure.runTrackingCommand())
+                    .onlyWhile(() -> !(turret.atSetpoint() && flywheel.atSetpoint()))
                     .andThen(
                         Commands.parallel(
-                            flywheel.runTrackingCommand(drive::distanceFromHubFeet),
+                            shooterSuperstructure.runTrackingCommand(),
                             hopper.runHopperDutyCycleCommand(0.7),
                             SimCommands.visualizeScoringFuelTurretSOTM(driveSim, intakeSim)
                                 .onlyIf(() -> Constants.currentMode == Constants.Mode.SIM)))));
@@ -258,9 +265,9 @@ public class RobotContainer {
         .rightTrigger()
         .and(() -> HubShiftUtil.isHubActive())
         .or(() -> shootOverride)
-        .whileTrue(new AimAtHub(drive, controller))
-        .whileTrue(flywheel.runTrackingCommand(drive::distanceFromHubFeet))
-        .and(drive::aimedAtHub)
+        .whileTrue(DriveCommands.joystickDriveSOTM(drive, driveX, driveY, driveOmega))
+        .whileTrue(shooterSuperstructure.runTrackingCommand())
+        .and(turret::atSetpoint)
         .and(flywheel::atSetpoint)
         .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)

@@ -3,59 +3,38 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.437181846217105,
-        "y": 7.429340691817434
+        "x": 3.6,
+        "y": 7.427
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.437181846217105,
-        "y": 7.429340691817434
-      },
-      "isLocked": false,
-      "linkedName": "DepotNeutralStart"
-    },
-    {
-      "anchor": {
-        "x": 7.23,
-        "y": 7.188108595463267
-      },
-      "prevControl": {
-        "x": 6.713147283185993,
-        "y": 7.398762592186711
-      },
-      "nextControl": {
-        "x": 7.746852716814008,
-        "y": 6.977454598739823
+        "x": 2.175,
+        "y": 7.427
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.59,
-        "y": 4.438
+        "x": 0.75,
+        "y": 7.427
       },
       "prevControl": {
-        "x": 7.59,
-        "y": 5.376842346879206
+        "x": 2.175,
+        "y": 7.427
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "DepotNeutralCheckpoint1"
+      "linkedName": null
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 1.3123110640870626,
-      "rotationDegrees": -75.0
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "IntakeAtNeutralZone",
-      "waypointRelativePos": 0.9818468823993677,
+      "name": "IntakeSlapdown",
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "named",
@@ -75,7 +54,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -75.0
+    "rotation": 0.0
   },
   "reversed": false,
   "folder": null,

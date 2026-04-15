@@ -77,9 +77,7 @@ public class RobotContainer {
   private final LoggedDashboardChooser<Command> autoChooser;
 
   // Overrides
-  private boolean shootOverride = false; // If true, allows you to auto shoot when hub is inactive.
-  private boolean engageTurret =
-      false; // If true, allows fuel to be visualized as if it were being shot from a turret
+  private boolean shootOverride = false; // If true, allows you to auto shoot when hub is inactive.]
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -208,7 +206,7 @@ public class RobotContainer {
                         Commands.parallel(
                             flywheel.runTrackingCommand(drive::distanceFromHubFeet),
                             hopper.runHopperDutyCycleCommand(0.7),
-                            SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim)
+                            SimCommands.visualizeScoringFuelTurretSOTM(driveSim, intakeSim)
                                 .onlyIf(() -> Constants.currentMode == Constants.Mode.SIM)))));
 
     // Set up auto routines
@@ -258,7 +256,6 @@ public class RobotContainer {
     // Then spins up the hopper to feed the shooter
     controller
         .rightTrigger()
-        .and(() -> !engageTurret)
         .and(() -> HubShiftUtil.isHubActive())
         .or(() -> shootOverride)
         .whileTrue(new AimAtHub(drive, controller))
@@ -267,19 +264,7 @@ public class RobotContainer {
         .and(flywheel::atSetpoint)
         .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
         .and(() -> Constants.currentMode == Constants.Mode.SIM)
-        .whileTrue(SimCommands.visualizeScoringFuel(drive, driveSim, intakeSim));
-
-    controller
-        .rightTrigger()
-        .and(() -> engageTurret)
-        .and(() -> HubShiftUtil.isHubActive())
-        .or(() -> shootOverride)
-        .whileTrue(flywheel.runTrackingCommand(drive::distanceFromHubFeet))
-        .whileTrue(DriveCommands.joystickDriveSOTM(drive, driveY, driveX, driveOmega))
-        .and(flywheel::atSetpoint)
-        .whileTrue(hopper.runHopperDutyCycleCommand(0.7))
-        .and(() -> Constants.currentMode == Constants.Mode.SIM)
-        .whileTrue(SimCommands.visualizeScoringFuelTurretSOTF(driveSim, intakeSim));
+        .whileTrue(SimCommands.visualizeScoringFuelTurretSOTM(driveSim, intakeSim));
 
     controller
         .rightTrigger()
@@ -312,11 +297,6 @@ public class RobotContainer {
         .povUp()
         .onTrue(Commands.runOnce(() -> shootOverride = true).ignoringDisable(true))
         .onFalse(Commands.runOnce(() -> shootOverride = false).ignoringDisable(true));
-
-    controller
-        .leftBumper()
-        .onTrue(Commands.runOnce(() -> engageTurret = true).ignoringDisable(true))
-        .onFalse(Commands.runOnce(() -> engageTurret = false).ignoringDisable(true));
   }
 
   /**

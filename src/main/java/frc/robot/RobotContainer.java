@@ -40,7 +40,7 @@ import frc.robot.subsystems.shooter.flywheel.FlywheelIOReal;
 import frc.robot.subsystems.shooter.flywheel.FlywheelIOSim;
 import frc.robot.subsystems.vision.photonvision.*;
 import frc.robot.subsystems.vision.questnav.*;
-import frc.robot.util.ChooserListener;
+import frc.robot.util.AutoChooserCallback;
 import frc.robot.util.HubShiftUtil;
 import frc.robot.util.LocalADStarAK;
 import java.util.Map;
@@ -212,8 +212,7 @@ public class RobotContainer {
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
-    autoChooser.onChange(
-        new ChooserListener(autoChooser.getSendableChooser()::getSelected, drive, questNav));
+    autoChooser.onChange(new AutoChooserCallback(drive, questNav));
 
     // Configure the button bindings
     configureButtonBindings();

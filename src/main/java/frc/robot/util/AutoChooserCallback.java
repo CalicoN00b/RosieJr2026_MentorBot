@@ -12,26 +12,21 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.questnav.QuestNav;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-public class ChooserListener implements Consumer<Command> {
+public class AutoChooserCallback implements Consumer<Command> {
 
-  private final Supplier<String> selectedSupplier;
   private final Drive drive;
   private final QuestNav questNav;
 
-  public ChooserListener(Supplier<String> selectedSupplier, Drive drive, QuestNav questNav) {
-    this.selectedSupplier = selectedSupplier;
+  public AutoChooserCallback(Drive drive, QuestNav questNav) {
     this.drive = drive;
     this.questNav = questNav;
   }
 
   @Override
   public void accept(Command t) {
-    // We will now proceed to ignore the command that we're supposed to be accepting
     try {
-      List<PathPlannerPath> pathsInAuto =
-          PathPlannerAuto.getPathGroupFromAutoFile(selectedSupplier.get());
+      List<PathPlannerPath> pathsInAuto = PathPlannerAuto.getPathGroupFromAutoFile(t.getName());
       PathPlannerPath startingPath = pathsInAuto.get(0);
       Pose2d startingPose =
           startingPath
@@ -49,7 +44,7 @@ public class ChooserListener implements Consumer<Command> {
               ? startingPose.rotateAround(FieldConstants.fieldCenter, Rotation2d.k180deg)
               : startingPose);
     } catch (Exception e) {
-      DriverStation.reportWarning("Could not load auto path: " + selectedSupplier.get(), false);
+      DriverStation.reportWarning("Could not load auto path: " + t.getName(), false);
     }
   }
 }

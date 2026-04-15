@@ -50,7 +50,7 @@ public class Flywheel extends SubsystemBase {
 
   @AutoLogOutput(key = "Flywheel/AtSetpoint")
   public boolean atSetpoint() {
-    if (setpoint == 0) return true;
+    if (Constants.currentMode == Constants.Mode.SIM || setpoint == 0) return true;
 
     double upperLimit = setpoint * 1.02;
     double lowerLimit = setpoint * 0.98;

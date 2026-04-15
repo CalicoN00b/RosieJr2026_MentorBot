@@ -4,8 +4,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import java.util.function.DoubleSupplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -14,7 +14,7 @@ public class Turret extends SubsystemBase {
   private final TurretIO io;
   private final TurretIOInputsAutoLogged inputs = new TurretIOInputsAutoLogged();
 
-  @AutoLogOutput(key="Turret/Setpoint")
+  @AutoLogOutput(key = "Turret/Setpoint")
   private double setpoint;
 
   public Turret(TurretIO io) {
@@ -32,8 +32,10 @@ public class Turret extends SubsystemBase {
     setpoint = degrees;
   }
 
-  @AutoLogOutput(key="Turret/AtSetpoint")
+  @AutoLogOutput(key = "Turret/AtSetpoint")
   public boolean atSetpoint() {
+    if (Constants.currentMode == Constants.Mode.SIM) return true;
+
     double currentTurretAngle = io.getTurretAngle().getDegrees();
 
     double upperLimit = setpoint + 2;

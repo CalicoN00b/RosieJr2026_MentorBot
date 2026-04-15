@@ -67,8 +67,7 @@ public class ShooterSuperstructure extends SubsystemBase {
 
   public Command runTrackingCommand() {
     return Commands.parallel(
-      flywheel.runTrackingCommand(() -> targetDistance),
-      turret.runTrackingCommand(() -> turretAngleToTarget)
-    );
+        flywheel.runTrackingCommand(() -> targetDistance),
+        turret.runTrackingCommand(() -> turretAngleToTarget));
   }
 }

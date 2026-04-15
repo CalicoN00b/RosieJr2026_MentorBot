@@ -27,8 +27,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.AimAtHub;
-import frc.robot.commands.AimAtHubAuto;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.SimCommands;
 import frc.robot.subsystems.drive.*;
@@ -106,7 +104,9 @@ public class RobotContainer {
                 new PhotonVisionIOReal(
                     PhotonVisionConstants.camera1Name, PhotonVisionConstants.robotToCamera1));
         questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIOReal(drive::getPose));
-        shooterSuperstructure = new ShooterSuperstructure(flywheel, turret, drive::getPose, drive::getFieldRelativeChassisSpeeds);
+        shooterSuperstructure =
+            new ShooterSuperstructure(
+                flywheel, turret, drive::getPose, drive::getFieldRelativeChassisSpeeds);
         break;
 
       case SIM:
@@ -147,7 +147,12 @@ public class RobotContainer {
         intake = new Intake(new IntakeIOSim());
         hopper = new Hopper(new HopperIO() {});
         questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIO() {});
-        shooterSuperstructure = new ShooterSuperstructure(flywheel, turret, driveSim::getSimulatedDriveTrainPose, driveSim::getDriveTrainSimulatedChassisSpeedsFieldRelative);
+        shooterSuperstructure =
+            new ShooterSuperstructure(
+                flywheel,
+                turret,
+                driveSim::getSimulatedDriveTrainPose,
+                driveSim::getDriveTrainSimulatedChassisSpeedsFieldRelative);
         break;
 
       default:
@@ -166,7 +171,9 @@ public class RobotContainer {
         intake = new Intake(new IntakeIO() {});
         hopper = new Hopper(new HopperIO() {});
         questNav = new QuestNav(drive::addVisionMeasurement, new QuestNavIO() {});
-        shooterSuperstructure = new ShooterSuperstructure(flywheel, turret, drive::getPose, drive::getFieldRelativeChassisSpeeds);
+        shooterSuperstructure =
+            new ShooterSuperstructure(
+                flywheel, turret, drive::getPose, drive::getFieldRelativeChassisSpeeds);
         break;
     }
 
@@ -206,8 +213,7 @@ public class RobotContainer {
                         SimCommands.runIntake(intakeSim)
                             .onlyIf(() -> Constants.currentMode == Constants.Mode.SIM)),
             "Shoot",
-                Commands.parallel(
-                        shooterSuperstructure.runTrackingCommand())
+                Commands.parallel(shooterSuperstructure.runTrackingCommand())
                     .onlyWhile(() -> !(turret.atSetpoint() && flywheel.atSetpoint()))
                     .andThen(
                         Commands.parallel(

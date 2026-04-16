@@ -84,7 +84,7 @@ public class TurretIOReal implements TurretIO {
 
     double absToothCount = solveCRT((int) tooth13, (int) tooth17) + tooth13Remainder;
 
-    return (absToothCount / 80) * 380 - 135;
+    return (absToothCount / 80) * 360 - 135;
   }
 
   private int solveCRT(int tooth13, int tooth17) {

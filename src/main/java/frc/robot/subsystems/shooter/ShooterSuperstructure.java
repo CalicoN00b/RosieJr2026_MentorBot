@@ -60,8 +60,7 @@ public class ShooterSuperstructure extends SubsystemBase {
         adjustedTargetPose
             .minus(currentDrivePose.getTranslation())
             .getAngle()
-            .plus(currentDrivePose.getRotation())
-            .minus(isFlipped ? Rotation2d.k180deg : Rotation2d.kZero)
+            .minus(currentDrivePose.getRotation())
             .getDegrees();
   }
 

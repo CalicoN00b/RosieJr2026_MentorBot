@@ -269,9 +269,8 @@ public class RobotContainer {
     // Then spins up the hopper to feed the shooter
     controller
         .rightTrigger()
-        .and(() -> HubShiftUtil.isHubActive())
-        .or(() -> shootOverride)
-        .whileTrue(DriveCommands.joystickDriveSOTM(drive, driveX, driveY, driveOmega))
+        .and(() -> HubShiftUtil.isHubActive() || shootOverride)
+        .whileTrue(DriveCommands.joystickDriveSOTM(drive, driveY, driveX, driveOmega))
         .whileTrue(shooterSuperstructure.runTrackingCommand())
         .and(turret::atSetpoint)
         .and(flywheel::atSetpoint)
